@@ -37,6 +37,8 @@ def room(id):
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
     form = RegistrationForm()
+    print(form.email.data)
+    print(form.is_submitted())
     if form.validate_on_submit():
         if form.password.data != form.repeat_password.data:
             return render_template('registration.html', form=form, message='Пароли не совпадают')
@@ -47,9 +49,9 @@ def registration():
         student = Student(
             login=form.email.data,
             name=form.name.data,
-            surname=form.surname.data
+            surname=form.surname.data,
+            sex=1
         )
-
         student.set_password(form.password.data)
         db_sess.add(student)
         db_sess.commit()
