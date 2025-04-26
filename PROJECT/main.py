@@ -5,7 +5,7 @@ from data.student import Student
 from data.room import Room
 from data.hostel import Hostel
 from data.tag import Tag
-from data.admin import Admin
+from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
@@ -63,7 +63,7 @@ initialize_routes(api)
 
 def main():
     db_session.global_init("db/database.db")
-    app.run()
+    app.run(host='0.0.0.0', port=80)
 
 
 @login_manager.user_loader
@@ -75,12 +75,18 @@ def load_user(user_id):
 @app.route('/')
 def main_page():
     if not current_user.is_authenticated:
-        return "Hello world"
+        return render_template("matthew1.html")
+
+@app.route('/test')
+def second_page():
+    return "Hello, world!"
     return f"{current_user.name, current_user.surname}"
 
 
 @app.route('/me')
 def myself():
+    if not current_user.is_authenticated:
+        return redirect('/login')
     return f'thats my page'
 
 
@@ -116,7 +122,7 @@ def registration():
         db_sess.add(student)
         db_sess.commit()
         db_sess.close()
-        return redirect('/')
+        return redirect('/login')
     return render_template('registration.html', form=form)
 
 
@@ -148,10 +154,9 @@ def settings():
     return 'settings'
 
 
-@app.route('/admin')
+@app.route('/applications')
 def admin():
-    return 'admin'
-
+    return 'applications'
 
 @app.route('/add', methods=['GET'])
 def add():

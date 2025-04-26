@@ -7,7 +7,7 @@ from flask_login import UserMixin
 class Student(SqlAlchemyBase, UserMixin):
     __tablename__ = 'student'
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, unique=True, primary_key=True)
     login = sqlalchemy.Column(sqlalchemy.String, unique=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String)
     name = sqlalchemy.Column(sqlalchemy.String)
@@ -16,6 +16,7 @@ class Student(SqlAlchemyBase, UserMixin):
     course = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     about = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     sex = sqlalchemy.Column(sqlalchemy.Boolean)
+    admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True)
 
     room = sqlalchemy.orm.relationship('Room', back_populates='students')
     application_request = sqlalchemy.orm.relationship('Application_request', back_populates='student')
