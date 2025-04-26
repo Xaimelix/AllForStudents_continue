@@ -52,7 +52,7 @@ deploy:
     - ssh-add ~/.ssh/id_rsa
 
     # Проверка подключения
-    - echo SSH_HOST:"$SSH_HOST"
+    - echo "SSH_HOST: $SSH_HOST"
     - nc -zvw3 "$SSH_HOST" 22 || true
 
     # Сканирование SSH-хоста
