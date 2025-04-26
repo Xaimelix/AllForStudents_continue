@@ -4,7 +4,6 @@ include:
     file:
       - "/jobs/build.yaml"
       - "/jobs/docker.yaml"
-      - "/jobs/rules.yaml"
 
 .global-variables:
   variables:
@@ -20,13 +19,11 @@ build:
   stage: build
   extends:
     - .build
-    - .rules-merge-or-master
 
 deploy:
   stage: deploy
   extends:
     - .docker_run
     - .global-variables
-    - .rules-merge-or-master
   variables:
     OPT_DOCKER: "-p 80:80"
