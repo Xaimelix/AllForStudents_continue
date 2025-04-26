@@ -11,7 +11,6 @@ include:
     SSH_HOST: "$ENV_SSH_HOST"
     SSH_PRIVATE_KEY_BASE64: "$ENV_PRIVATE_KEY_BASE64"
 
-
 stages:
   - build
   - deploy
@@ -28,3 +27,24 @@ deploy:
     - .global-variables
   variables:
     OPT_DOCKER: "-p 8080:8080"
+  before_script:
+    # Настройка SSH
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - chmod 600 ~/.ssh/config
+    - echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
+    - chmod 400 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+
+    # Отладочные команды
+    - echo "Проверка переменной SSH_HOST: $SSH_HOST"
+    - set -x  # Включаем подробный вывод
+    - ssh-keyscan -H -p 22 "$SSH_HOST" > ~/.ssh/known_hosts
+    - set +x   # Выключаем подробный вывод
+    - chmod 644 ~/.ssh/known_hosts
+
+    # Дополнительные проверки (опционально)
+    - echo "Проверка подключения к SSH-хосту:"
+    - nc -zvw3 "$SSH_HOST" 22 || true
