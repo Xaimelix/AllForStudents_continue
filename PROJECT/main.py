@@ -1,14 +1,20 @@
-from flask import Flask, redirect, render_template
-from flask_login import LoginManager, login_user, current_user, logout_user
+from flask import Flask, redirect, render_template, jsonify, request
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from data import db_session
 from data.student import Student
+from data.room import Room
+from data.hostel import Hostel
+from data.tag import Tag
+from data.admin import Admin
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
+from flasgger import Swagger
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
 login_manager = LoginManager()
 login_manager.init_app(app)
+swagger = Swagger(app)
 
 
 def main():
@@ -46,6 +52,8 @@ def room(id):
 
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
+    if current_user.is_authenticated:
+        return redirect('/')
     form = RegistrationForm()
     if form.validate_on_submit():
         if form.password.data != form.repeat_password.data:
@@ -70,6 +78,8 @@ def registration():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect('/')
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -97,6 +107,65 @@ def settings():
 @app.route('/admin')
 def admin():
     return 'admin'
+
+
+@app.route('/add', methods=['GET'])
+def add():
+    """
+        Add room
+        ---
+        parameters:
+          - name: id
+            in: query
+            type: integer
+            required: true
+          - name: hostel_id
+            in: query
+            type: integer
+            required: true
+          - name: square
+            in: query
+            type: integer
+            required: true
+          - name: max_cnt_student
+            in: query
+            type: integer
+            required: true
+          - name: cur_cnt_student
+            in: query
+            type: integer
+            required: true
+          - name: floor
+            in: query
+            type: integer
+            required: true
+          - name: sex
+            in: query
+            type: boolean
+            required: true
+          - name: side
+            in: query
+            type: string
+            required: true
+        responses:
+          200:
+            description: -_-
+        """
+    db_sess = db_session.create_session()
+    room = Room(
+        id=int(request.args.get('id')),
+        hostel_id=int(request.args.get('hostel_id')),
+        square=float(request.args.get('square')),
+        max_cnt_student=int(request.args.get('max_cnt_student')),
+        cur_cnt_student=int(request.args.get('cur_cnt_student')),
+        floor=int(request.args.get('floor')),
+        sex=bool(request.args.get('sex')),
+        side=str(request.args.get('side'))
+    )
+    db_sess.add(room)
+    db_sess.commit()
+    db_sess.close()
+    return jsonify({'result': 'fine'})
 
 
 if __name__ == "__main__":
