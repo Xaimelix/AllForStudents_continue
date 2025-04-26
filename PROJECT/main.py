@@ -37,6 +37,8 @@ def main_page():
 
 @app.route('/me')
 def myself():
+    if not current_user.is_authenticated:
+        return redirect('/login')
     return f'thats my page'
 
 
@@ -104,10 +106,9 @@ def settings():
     return 'settings'
 
 
-@app.route('/admin')
+@app.route('/applications')
 def admin():
-    return 'admin'
-
+    return 'applications'
 
 @app.route('/add', methods=['GET'])
 def add():
