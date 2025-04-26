@@ -27,4 +27,4 @@ deploy:
     - .docker_run
     - .global-variables
   variables:
-    OPT_DOCKER: "-p 80:80"
+    OPT_DOCKER: "-p 8080:8080"
