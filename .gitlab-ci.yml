@@ -1,24 +1,30 @@
+include:
+  - project: pipelines/pipelines
+    ref: master
+    file:
+      - "/jobs/build.yaml"
+      - "/jobs/docker.yaml"
+
+.global-variables:
+  variables:
+    SSH_USER: "$ENV_SSH_USER"
+    SSH_HOST: "$ENV_SSH_HOST"
+    SSH_PRIVATE_KEY_BASE64: "$ENV_PRIVATE_KEY_BASE64"
+
+
 stages:
-  - restart
+  - build
+  - deploy
 
-variables:
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_HOST: "tcp://docker:2376"
-  DOCKER_TLS_VERIFY: "1"
-  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
-  DOCKER_DRIVER: overlay2
+build:
+  stage: build
+  extends:
+    - .build
 
-image: docker:20.10.16
-
-services:
-  - docker:20.10.16-dind
-
-before_script:
-  - for try in {1..10}; do sleep 0.5; docker info && break ; done
-  - echo "$YC_REGISTRY_KEY" | docker login -u "$YC_REGISTRY_USER" --password-stdin $CI_REGISTRY
-
-restart_vm:
-  stage: restart
-  when: manual
-  script:
-    - docker run --rm -e YC_INSTANCE_ID="$YC_INSTANCE_ID" -e YC_SA_KEY="$YC_SA_KEY" -e YC_SA_ID="$YC_SA_ID" -e YC_SA_PARENT_ID="$YC_SA_PARENT_ID" "$CI_REGISTRY/cloud-tools/init:v2.1"
+deploy:
+  stage: deploy
+  extends:
+    - .docker_run
+    - .global-variables
+  variables:
+    OPT_DOCKER: "-p 80:80"
