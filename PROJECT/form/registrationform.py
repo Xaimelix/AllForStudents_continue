@@ -9,4 +9,5 @@ class RegistrationForm(FlaskForm):
     repeat_password = PasswordField('Повторите пароль', validators=[DataRequired()])
     name = StringField('Имя', validators=[DataRequired()])
     surname = StringField('Фамилия', validators=[DataRequired()])
+    sex = StringField('Пол', validators=[DataRequired()])
     submit = SubmitField('Создать')
