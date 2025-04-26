@@ -6,6 +6,7 @@ from data.room import Room
 from data.hostel import Hostel
 from data.tag import Tag
 from data.admin import Admin
+from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger

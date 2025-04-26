@@ -7,7 +7,7 @@ from flask_login import UserMixin
 class Student(SqlAlchemyBase, UserMixin):
     __tablename__ = 'student'
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, unique=True, primary_key=True)
     login = sqlalchemy.Column(sqlalchemy.String, unique=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String)
     name = sqlalchemy.Column(sqlalchemy.String)
