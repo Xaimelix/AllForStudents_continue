@@ -15,6 +15,13 @@ class Room(SqlAlchemyBase, UserMixin):
     sex = sqlalchemy.Column(sqlalchemy.Boolean)
     side = sqlalchemy.Column(sqlalchemy.String)
 
+
+    # + ограничение по курсу
+    # + ограничение по полу
+
+    # комннаты с фотограиями 
+
+
     students = sqlalchemy.orm.relationship('Student', back_populates='room')
     hostel = sqlalchemy.orm.relationship('Hostel', back_populates='room')
     application_request = sqlalchemy.orm.relationship('Application_request', back_populates='room')
