@@ -12,11 +12,10 @@ class Student(SqlAlchemyBase, UserMixin):
     hashed_password = sqlalchemy.Column(sqlalchemy.String)
     name = sqlalchemy.Column(sqlalchemy.String)
     surname = sqlalchemy.Column(sqlalchemy.String)
-    room_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('room.id'))
+    room_id = sqlalchemy.Column(sqlalchemy.Integer)
     course = sqlalchemy.Column(sqlalchemy.Integer)
     about = sqlalchemy.Column(sqlalchemy.String)
     sex = sqlalchemy.Column(sqlalchemy.Boolean)
-    room = sqlalchemy.orm.relationship('room', back_populates='student')
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
