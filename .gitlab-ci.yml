@@ -5,25 +5,27 @@ stages:
 variables:
   DOCKER_IMAGE: "avatar-generator"
   PROJECT_DIR: "/opt/avatar-service"
-  DOCKER_HOST: "tcp://docker:2375"
 
-default:
+# Общий шаблон для Docker
+.docker_template:
   image: docker:24.0
   services:
     - docker:24.0-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 build:
   stage: build
-  extends: default
+  extends: .docker_template
   script:
-    - docker build -t $CI_REGISTRY_IMAGE .
-    - docker push $CI_REGISTRY_IMAGE
+    - docker build -t $CI_REGISTRY/$DOCKER_IMAGE:latest .
+    - docker push $CI_REGISTRY/$DOCKER_IMAGE:latest
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 deploy:
   stage: deploy
-  extends: .default
+  extends: .docker_template
   before_script:
     - apk add --no-cache openssh-client
     - mkdir -p ~/.ssh
@@ -34,14 +36,14 @@ deploy:
     - |
       ssh $ENV_SSH_USER@$ENV_SSH_HOST <<EOF
       mkdir -p $PROJECT_DIR
-      docker pull $CI_REGISTRY_IMAGE
+      docker pull $CI_REGISTRY/$DOCKER_IMAGE:latest
       docker stop avatar-service || true
       docker rm avatar-service || true
       docker run -d \
         --name avatar-service \
         -p 80:80 \
         -v $PROJECT_DIR/data:/app/PROJECT/data \
-        $CI_REGISTRY_IMAGE
+        $CI_REGISTRY/$DOCKER_IMAGE:latest
       EOF
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
