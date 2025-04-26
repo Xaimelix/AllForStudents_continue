@@ -19,31 +19,47 @@ build:
   stage: build
   extends:
     - .build
+  # Опционально: добавьте специфичные для build команды
+  script:
+    - echo "Building the project..."
+    - your-build-command-here
 
 deploy:
   stage: deploy
   extends:
     - .docker_run
     - .global-variables
+  image: ubuntu:22.04  # Используем современный образ
   variables:
     OPT_DOCKER: "-p 8080:8080"
   before_script:
-    # SSH setup
+    # Установка зависимостей
+    - apt-get update -qq && apt-get install -y -qq openssh-client netcat
+
+    # Настройка SSH
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - "echo -e 'Host *\n\tStrictHostKeyChecking no\n' > ~/.ssh/config"
-    - chmod 600 ~/.ssh/config
-    - echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
+    - printf "%s" "$SSH_PRIVATE_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
     - chmod 400 ~/.ssh/id_rsa
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+    - chmod 600 ~/.ssh/config
+
+    # Проверка ключа
+    - ssh-keygen -l -f ~/.ssh/id_rsa  # Должен показать fingerprint
+
+    # Добавление ключа
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
 
-    # Debugging
-    - echo Checking SSH_HOST:"$SSH_HOST"
-    - set -x
+    # Проверка подключения
+    - echo SSH_HOST:"$SSH_HOST"
+    - nc -zvw3 "$SSH_HOST" 22 || true
+
+    # Сканирование SSH-хоста
     - ssh-keyscan -H -p 22 "$SSH_HOST" > ~/.ssh/known_hosts
-    - set +x
     - chmod 644 ~/.ssh/known_hosts
 
-    # Connection check
-    - nc -zvw3 "$SSH_HOST" 22 || true
+  script:
+    - echo "Deploying to $SSH_HOST..."
+    # Ваши команды деплоя через SSH
+    - ssh "$SSH_USER@$SSH_HOST" "docker run $OPT_DOCKER your-image"
