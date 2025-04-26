@@ -1,5 +1,5 @@
 from flask_restful import Api
-from .resources import ApplicationRequestResource, RoomResource, StudentResource, HostelResource
+from .resources import ApplicationRequestResource, RoomResource, StudentResource, HostelResource, ReportResource
 
 def initialize_routes(api):
     """Инициализация маршрутов API."""
@@ -18,3 +18,6 @@ def initialize_routes(api):
     # Для HostelResource
     api.add_resource(HostelResource, '/api/hostels', endpoint='hostels')
     api.add_resource(HostelResource, '/api/hostels/<int:hostel_id>', endpoint='hostel_by_id')
+
+    # Для ReportResource
+    api.add_resource(ReportResource, '/api/reports/<string:report_type>')

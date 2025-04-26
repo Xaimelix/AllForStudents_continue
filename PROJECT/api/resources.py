@@ -1,10 +1,20 @@
 from flask_restful import Resource, reqparse
+from flask import Flask, send_file
 from data.db_session import create_session
+from sqlalchemy import func
 from data.application_request import Application_request
 from data.student import Student
 from data.room import Room
 from data.hostel import Hostel
 from datetime import datetime
+
+import matplotlib
+
+matplotlib.use('Agg')  # Используем 'Agg' для работы с графиками без GUI
+
+import matplotlib.pyplot as plt
+from fpdf import FPDF
+import io
 
 # --- Парсер для ApplicationRequestResource (для методов POST/PUT) ---
 application_request_parser = reqparse.RequestParser()
@@ -941,3 +951,204 @@ class HostelResource(Resource):
             db_sess.close()
 
     # TODO: Добавить метод put(self, hostel_id) для обновления общежития
+
+
+
+class ReportResource(Resource):
+
+    def get(self, report_type):
+        """
+        Генерация различных отчетов в формате PDF.
+        ---
+        tags:
+          - Reports
+        parameters:
+          - name: report_type
+            in: path
+            type: string
+            required: true
+            description: Тип отчета (например, 'pdf', 'csv')
+          # Могут быть другие параметры для фильтрации (например, hostel_id, start_date, end_date)
+          # - name: hostel_id
+          #   in: query
+          #   type: integer
+          #   required: false
+          #   description: ID общежития для фильтрации
+        responses:
+          200:
+            description: PDF отчет успешно сгенерирован
+            schema:
+              type: file # В Swagger 2.0 для файлов
+              format: binary
+              # Или в OpenAPI 3.0: content: {'application/pdf': {schema: {type: string, format: binary}}}
+          400:
+            description: Неизвестный тип отчета или некорректные параметры
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при генерации отчета
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        if report_type == 'pdf':
+            return self.generate_pdf_report()
+        # elif report_type == 'csv':
+            # return self.generate_csv_report()
+        # Добавь другие типы отчетов по мере необходимости
+        else:
+            return {'message': f'Неизвестный тип отчета: {report_type}'}, 400
+
+    def generate_pdf_report(self):
+        """Логика генерации отчета по заполненности комнат."""
+        db_sess = create_session()
+
+        # --- 1. Сбор сводной статистики по общежитиям ---
+        try:
+            hostel_summary_data = db_sess.query(
+                Hostel.id,
+                Hostel.address,
+                func.count(Room.id).label('total_rooms'), # Количество комнат в общежитии
+                func.sum(Room.max_cnt_student).label('total_capacity'), # Общая максимальная вместимость
+                func.sum(Room.cur_cnt_student).label('total_occupied') # Общее текущее количество студентов
+            ).join(Room).group_by(Hostel.id, Hostel.address).all()
+
+            # Результат будет списком кортежей или объектов, например:
+            # [(hostel_id, address, total_rooms, total_capacity, total_occupied), ...]
+
+            # Обработка данных для расчета свободных мест и процентов
+            hostel_stats = []
+            for hostel in hostel_summary_data:
+                free_spots = hostel.total_capacity - hostel.total_occupied
+                # Процент заполненности по общежитию
+                occupancy_percentage = (hostel.total_occupied / hostel.total_capacity) * 100 if hostel.total_capacity > 0 else 0
+
+                hostel_stats.append({
+                    'id': hostel.id,
+                    'address': hostel.address,
+                    'total_rooms': hostel.total_rooms,
+                    'total_capacity': hostel.total_capacity,
+                    'total_occupied': hostel.total_occupied,
+                    'free_spots': free_spots,
+                    'occupancy_percentage': occupancy_percentage
+                })
+
+            #--- 2. Сбор данных о популярных комнатах ---
+            try:
+                # Получаем все комнаты с их текущим количеством студентов, привязанные к общежитию
+                rooms_with_occupancy = db_sess.query(
+                    Hostel.id.label('hostel_id'),
+                    Hostel.address,
+                    Room.id.label('room_id'),
+                    Room.cur_cnt_student
+                ).join(Hostel).filter(Room.cur_cnt_student > 0).order_by(Hostel.id, Room.cur_cnt_student.desc()).all() # Сортируем по общежитию и убыванию студентов
+
+                # Группируем по общежитиям и выбираем, например, топ-N самых "занятых" комнат в каждом
+                popular_rooms_by_hostel = {}
+                current_hostel_id = None
+                top_n = 3 # Например, хотим показать топ-3 самых занятых комнат в каждом общежитии
+                for room in rooms_with_occupancy:
+                    if room.hostel_id not in popular_rooms_by_hostel:
+                        popular_rooms_by_hostel[room.hostel_id] = {
+                            'address': room.address,
+                            'rooms': []
+                        }
+
+                    if len(popular_rooms_by_hostel[room.hostel_id]['rooms']) < top_n:
+                        popular_rooms_by_hostel[room.hostel_id]['rooms'].append({
+                            'room_id': room.room_id,
+                            'cur_cnt_student': room.cur_cnt_student
+                        })
+
+
+                # Теперь popular_rooms_by_hostel - это словарь, где ключи - ID общежитий, а значения - информация о самых занятых комнатах.
+
+            except Exception as e:
+                print(f"Ошибка при сборе данных о комнатах для популярности: {e}")
+            
+
+            # --- 4. Создание круговых диаграмм для каждого общежития и добавление их в PDF ---
+            pdf = FPDF()
+            try:
+                font_path = 'PROJECT/static/fonts/DejaVuSans.ttf' # Путь к шрифту DejaVuSans.ttf
+                pdf.add_font('DejaVuSans', '', font_path, uni=True)
+                pdf.set_font('DejaVuSans', '', 12)
+            except RuntimeError:
+                pdf.set_font("Arial", size=12) # Вернуться к стандартному, если шрифт не работает
+            # if hostel['id'] in popular_rooms_by_hostel:
+            
+            #     pdf.cell(0, 10, txt="Самые занятые комнаты:", ln=True, align='L')
+            #     for room in popular_rooms_by_hostel[hostel['id']]['rooms']:
+            #         # Здесь можно добавить текст для каждой комнаты, например:
+            #         print(room)
+            #         pdf.cell(0, 10, txt=f"Комната ID {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
+            #         pdf.ln(5) # Небольшой отступ после информации о комнатах
+
+            
+            for hostel in hostel_stats:
+                pdf.add_page()
+                # Данные для круговой диаграммы: занятые места и свободные места
+                sizes = [hostel['total_occupied'], hostel['free_spots']]
+                labels = ['Занято', 'Свободно']
+                colors = ['#ff9999','#66b3ff'] # Цвета для секторов
+                # Если в общежитии нет мест (capacity = 0) или 0 студентов, диаграмма может быть некорректной.
+                # Добавим простую проверку.
+                if hostel['total_capacity'] == 0:
+                    print(f"Общежитие {hostel['address']} имеет 0 вместимость, диаграмма не будет построена.")
+                    continue # Пропускаем это общежитие
+
+                if hostel['total_occupied'] == 0 and hostel['free_spots'] == 0:
+                    print(f"Общежитие {hostel['address']} имеет 0 студентов и 0 свободных мест, диаграмма не будет построена.")
+                    continue # Пропускаем это общежитие
+
+
+                plt.figure(figsize=(6, 6)) # Размер фигуры для диаграммы
+                plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+                plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+                plt.title(f"Заполненность общежития: {hostel['address']}") # Заголовок диаграммы
+
+                if hostel['id'] in popular_rooms_by_hostel:
+                    pdf.cell(0, 10, txt="Самые занятые комнаты:", ln=True, align='L')
+                    for room in popular_rooms_by_hostel[hostel['id']]['rooms']:
+                        # Здесь можно добавить текст для каждой комнаты, например:
+                        pdf.cell(0, 10, txt=f"Комната ID {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
+                        pdf.ln(5) # Небольшой отступ после информации о комнатах
+
+
+
+                # Сохраняем диаграмму в байты
+                img_buffer = io.BytesIO()
+                plt.savefig(img_buffer, format='png')
+                img_buffer.seek(0)
+                plt.close() # Закрываем фигуру Matplotlib
+
+                # Добавляем заголовок общежития в PDF
+                # Убедимся, что используем шрифт с кириллицей, если он успешно добавлен
+
+                pdf.cell(0, 10, txt=f"Общежитие: {hostel['address']}", ln=True, align='L')
+
+                # Добавляем изображение диаграммы в PDF
+                # w=100 - пример ширины изображения, можешь настроить под свой формат страницы
+                pdf.image(img_buffer, x=None, y=None, w=100)                
+                pdf.ln(10) # Отступ после диаграммы
+
+            
+            pdf_output = pdf.output(dest='S') # TODO: Возможно, 'utf-8' или другой кодек с поддержкой кириллицы, если настроены шрифты
+
+            # 5. Отправка PDF
+            return send_file(io.BytesIO(pdf_output),
+                            mimetype='application/pdf',
+                            as_attachment=True,
+                            download_name='report.pdf')
+
+        except Exception as e:
+            return {'message': f'Ошибка при создании отчета: {e}'}, 500
+        finally:
+            db_sess.close()
+
+# TODO: Добавить if на отправку csv файла в зависимости от report_type
