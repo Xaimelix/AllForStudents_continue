@@ -13,31 +13,26 @@ before_script:
   - apk add --no-cache openssh-client rsync docker
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
-
-  # Подготовка SSH-ключа
   - cp private_key.pem ~/.ssh/id_rsa
   - chmod 600 ~/.ssh/id_rsa
   - ssh-keyscan -t rsa -p $SSH_PORT $SERVER_IP > ~/.ssh/known_hosts
-
-  # Проверка подключения
-  - echo "Testing SSH connection..."
-  - ssh -p $SSH_PORT -T -o BatchMode=yes -o ConnectTimeout=5 $SSH_USER@$SERVER_IP exit
-  - if [ $? -ne 0 ]; then echo "SSH connection failed!"; exit 1; fi
+  - |
+    echo "Testing SSH connection..."
+    ssh -p $SSH_PORT -T -o BatchMode=yes -o ConnectTimeout=5 $SSH_USER@$SERVER_IP exit
+    if [ $? -ne 0 ]; then
+      echo "SSH connection failed!"
+      exit 1
+    fi
 
 deploy:
   stage: deploy
   when: manual
   script:
-    - rsync -avz -e "ssh -p $SSH_PORT" \
-      --exclude='.git' \
-      --exclude='venv' \
-      ./ $SSH_USER@$SERVER_IP:$PROJECT_DIR/
-
-    - ssh -p $SSH_PORT $SSH_USER@$SERVER_IP << EOF
+    - rsync -avz -e "ssh -p $SSH_PORT" --exclude='.git' --exclude='venv' ./ $SSH_USER@$SERVER_IP:$PROJECT_DIR/
+    - |
+      ssh -p $SSH_PORT $SSH_USER@$SERVER_IP /bin/bash << 'EOF'
       set -e
       cd $PROJECT_DIR
-      
-      # Docker-команды
       docker build -t $DOCKER_IMAGE .
       docker stop running-$DOCKER_IMAGE || true
       docker rm running-$DOCKER_IMAGE || true
