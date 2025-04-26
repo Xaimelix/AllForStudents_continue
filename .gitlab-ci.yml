@@ -11,6 +11,7 @@ include:
     SSH_HOST: "$ENV_SSH_HOST"
     SSH_PRIVATE_KEY_BASE64: "$ENV_PRIVATE_KEY_BASE64"
 
+
 stages:
   - build
   - deploy
