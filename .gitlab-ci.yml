@@ -1,5 +1,6 @@
 stages:
-  - restart
+  - build
+  - deploy
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
@@ -7,18 +8,63 @@ variables:
   DOCKER_TLS_VERIFY: "1"
   DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   DOCKER_DRIVER: overlay2
+  DOCKER_IMAGE: "your_project_image"
+  PROJECT_DIR: "/opt/project"
+  SSH_PORT: "22"
 
-image: docker:20.10.16
+image: docker:24.0.7
 
 services:
-  - docker:20.10.16-dind
+  - docker:24.0.7-dind
 
 before_script:
-  - for try in {1..10}; do sleep 0.5; docker info && break ; done
-  - echo "$YC_REGISTRY_KEY" | docker login -u "$YC_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  - apk add --no-cache openssh-client rsync
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - ssh-keyscan -p $SSH_PORT -H $SERVER_IP >> ~/.ssh/known_hosts
 
-restart_vm:
-  stage: restart
+build:
+  stage: build
+  script:
+    - docker build -t $DOCKER_IMAGE:latest .
+    - docker tag $DOCKER_IMAGE:latest $CI_REGISTRY/$DOCKER_IMAGE:latest
+    - docker push $CI_REGISTRY/$DOCKER_IMAGE:latest
+  artifacts:
+    paths:
+      - PROJECT/
+    expire_in: 1 hour
+
+deploy:
+  stage: deploy
   when: manual
   script:
-    - docker run --rm -e YC_INSTANCE_ID="$YC_INSTANCE_ID" -e YC_SA_KEY="$YC_SA_KEY" -e YC_SA_ID="$YC_SA_ID" -e YC_SA_PARENT_ID="$YC_SA_PARENT_ID" "$CI_REGISTRY/cloud-tools/init:v2.1"
+    - |
+      rsync -avz -e "ssh -p $SSH_PORT" \
+        --exclude='.git' \
+        --exclude='venv' \
+        ./PROJECT/ $SSH_USER@$SERVER_IP:$PROJECT_DIR/
+
+      ssh -p $SSH_PORT $SSH_USER@$SERVER_IP /bin/bash << EOF
+        set -e
+        cd $PROJECT_DIR
+        
+        docker pull $CI_REGISTRY/$DOCKER_IMAGE:latest
+        
+        docker stop $DOCKER_IMAGE || true
+        docker rm $DOCKER_IMAGE || true
+        
+        docker run -d \
+          --name $DOCKER_IMAGE \
+          -p 80:5000 \
+          -v $PROJECT_DIR/data:/app/PROJECT/data \
+          -v $PROJECT_DIR/static:/app/PROJECT/static \
+          -v $PROJECT_DIR/templates:/app/PROJECT/templates \
+          -v $PROJECT_DIR/private_key.pem:/app/PROJECT/private_key.pem \
+          $CI_REGISTRY/$DOCKER_IMAGE:latest
+      EOF
+  after_script:
+    - docker logout $CI_REGISTRY
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
