@@ -28,24 +28,22 @@ deploy:
   variables:
     OPT_DOCKER: "-p 8080:8080"
   before_script:
-    # Настройка SSH
+    # SSH setup
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - "echo -e 'Host *\n\tStrictHostKeyChecking no\n' > ~/.ssh/config"
     - chmod 600 ~/.ssh/config
     - echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
     - chmod 400 ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
 
-    # Проверка переменной SSH_HOST
-    - echo "Проверка переменной SSH_HOST: $SSH_HOST"
-
-    # Отладочные команды для ssh-keyscan
-    - set -x  # Включаем подробный вывод
+    # Debugging
+    - echo Checking SSH_HOST:"$SSH_HOST"
+    - set -x
     - ssh-keyscan -H -p 22 "$SSH_HOST" > ~/.ssh/known_hosts
-    - set +x   # Выключаем подробный вывод
+    - set +x
     - chmod 644 ~/.ssh/known_hosts
 
-    # Проверка подключения (опционально)
+    # Connection check
     - nc -zvw3 "$SSH_HOST" 22 || true
