@@ -1,12 +1,13 @@
 FROM python:3.11-slim
 
 WORKDIR /app
-COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt \
-    && useradd -u 1001 -m appuser
+COPY ./PROJECT/requirements.txt .
 
-USER appuser
+RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 80
-CMD ["uvicorn", "PROJECT.main:app", "--host", "0.0.0.0", "--port", "80"]
+COPY ./PROJECT/ .
+
+EXPOSE 8080
+
+CMD ["python", "main.py"]

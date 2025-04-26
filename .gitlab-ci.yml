@@ -1,49 +1,32 @@
+include:
+  - project: pipelines/pipelines
+    ref: master
+    file:
+      - "/jobs/build.yaml"
+      - "/jobs/docker.yaml"
+      - "/jobs/rules.yaml"
+
+.global-variables:
+  variables:
+    SSH_USER: "$NAME_VM"
+    SSH_HOST: "$HOST"
+    SSH_PRIVATE_KEY_BASE64: "$SSH_KEY"
+
 stages:
   - build
   - deploy
 
-variables:
-  DOCKER_IMAGE: "avatar-generator"
-  PROJECT_DIR: "/opt/avatar-service"
-
-# Общий шаблон для Docker
-.docker_template:
-  image: docker:24.0
-  services:
-    - docker:24.0-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
 build:
   stage: build
-  extends: .docker_template
-  script:
-    - docker build -t $CI_REGISTRY/$DOCKER_IMAGE:latest .
-    - docker push $CI_REGISTRY/$DOCKER_IMAGE:latest
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  extends:
+    - .build
+    - .rules-merge-or-master
 
 deploy:
   stage: deploy
-  extends: .docker_template
-  before_script:
-    - apk add --no-cache openssh-client
-    - mkdir -p ~/.ssh
-    - echo "$ENV_PRIVATE_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan -H $ENV_SSH_HOST > ~/.ssh/known_hosts
-  script:
-    - |
-      ssh $ENV_SSH_USER@$ENV_SSH_HOST <<EOF
-      mkdir -p $PROJECT_DIR
-      docker pull $CI_REGISTRY/$DOCKER_IMAGE:latest
-      docker stop avatar-service || true
-      docker rm avatar-service || true
-      docker run -d \
-        --name avatar-service \
-        -p 80:80 \
-        -v $PROJECT_DIR/data:/app/PROJECT/data \
-        $CI_REGISTRY/$DOCKER_IMAGE:latest
-      EOF
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  extends:
+    - .docker_run
+    - .global-variables
+    - .rules-merge-or-master
+  variables:
+    OPT_DOCKER: "-p 80:80"

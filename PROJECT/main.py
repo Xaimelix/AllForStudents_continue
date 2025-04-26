@@ -19,7 +19,7 @@ swagger = Swagger(app)
 
 def main():
     db_session.global_init("db/database.db")
-    app.run()
+    app.run(host='0.0.0.0', port=8080)
 
 
 @login_manager.user_loader
@@ -31,7 +31,11 @@ def load_user(user_id):
 @app.route('/')
 def main_page():
     if not current_user.is_authenticated:
-        return "Hello world"
+        return render_template("matthew1.html")
+
+@app.route('/test')
+def second_page():
+    return "Hello, world!"
     return f"{current_user.name, current_user.surname}"
 
 
