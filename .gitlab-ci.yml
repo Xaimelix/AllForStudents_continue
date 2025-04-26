@@ -1,49 +1,47 @@
 stages:
+  - build
   - deploy
 
 variables:
-  SSH_USER: "ubuntu"
-  SSH_PORT: "22"
-  PROJECT_DIR: "/home/ubuntu/project"
-  DOCKER_IMAGE: "flask-app"
+  DOCKER_IMAGE: "avatar-generator"
+  PROJECT_DIR: "/opt/avatar-service"
+  DOCKER_HOST: "tcp://docker:2375"
 
-image: alpine:3.19
+default:
+  image: docker:24.0
+  services:
+    - docker:24.0-dind
 
-before_script:
-  - apk add --no-cache openssh-client rsync docker
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  - cp private_key.pem ~/.ssh/id_rsa
-  - chmod 600 ~/.ssh/id_rsa
-  - ssh-keyscan -t rsa -p $SSH_PORT $SERVER_IP > ~/.ssh/known_hosts
-  - |
-    echo "Testing SSH connection..."
-    ssh -p $SSH_PORT -T -o BatchMode=yes -o ConnectTimeout=5 $SSH_USER@$SERVER_IP exit
-    if [ $? -ne 0 ]; then
-      echo "SSH connection failed!"
-      exit 1
-    fi
+build:
+  stage: build
+  extends: .default
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 deploy:
   stage: deploy
-  when: manual
+  extends: .default
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$ENV_PRIVATE_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $ENV_SSH_HOST > ~/.ssh/known_hosts
   script:
-    - rsync -avz -e "ssh -p $SSH_PORT" --exclude='.git' --exclude='venv' ./ $SSH_USER@$SERVER_IP:$PROJECT_DIR/
     - |
-      ssh -p $SSH_PORT $SSH_USER@$SERVER_IP /bin/bash << 'EOF'
-      set -e
-      cd $PROJECT_DIR
-      docker build -t $DOCKER_IMAGE .
-      docker stop running-$DOCKER_IMAGE || true
-      docker rm running-$DOCKER_IMAGE || true
+      ssh $ENV_SSH_USER@$ENV_SSH_HOST <<EOF
+      mkdir -p $PROJECT_DIR
+      docker pull $CI_REGISTRY_IMAGE
+      docker stop avatar-service || true
+      docker rm avatar-service || true
       docker run -d \
-        --name running-$DOCKER_IMAGE \
-        -p 80:5000 \
+        --name avatar-service \
+        -p 80:80 \
         -v $PROJECT_DIR/data:/app/PROJECT/data \
-        -v $PROJECT_DIR/static:/app/PROJECT/static \
-        -v $PROJECT_DIR/templates:/app/PROJECT/templates \
-        -v $PROJECT_DIR/private_key.pem:/app/private_key.pem \
-        $DOCKER_IMAGE
+        $CI_REGISTRY_IMAGE
       EOF
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
