@@ -10,4 +10,7 @@ class Hostel(SqlAlchemyBase, UserMixin):
     address = sqlalchemy.Column(sqlalchemy.String)
     district = sqlalchemy.Column(sqlalchemy.String)
 
+    # общежития с фотографиями
+    # общежития с описанием
+
     room = sqlalchemy.orm.relationship('Room', back_populates='hostel')

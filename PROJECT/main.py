@@ -9,12 +9,56 @@ from data.admin import Admin
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
+from api.resources import Application_request, RoomResource
+from api.routes import initialize_routes
+from flask_restful import Api
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
 login_manager = LoginManager()
 login_manager.init_app(app)
-swagger = Swagger(app)
+
+swagger = Swagger(app, template={
+    "swagger": "2.0",
+    "info": {
+        "title": "API документация",
+        "description": "Документация для всех доступных API",
+        "version": "1.0"
+    },
+    "host": "localhost:5000",
+    "basePath": "/",
+    "schemes": [
+        "http"
+    ],
+    "tags": [
+        {
+            "name": "Application Requests",
+            "description": "Операции с заявками"
+        },
+        {
+            "name": "Students",
+            "description": "Операции со студентами"
+        },
+        {
+            "name": "Rooms",
+            "description": "Операции с комнатами"
+        },
+        {
+            "name": "Hostels",
+            "description": "Операции с общежитиями"
+        }
+    ]
+})
+
+# Инициализация Flask-RESTful
+api = Api(app)
+
+# Инициализация маршрутов API
+initialize_routes(api)
+
+# api = Api(app, version='1.0', title='API документация',
+#         description='Документация для API')
+
 
 
 def main():
