@@ -38,13 +38,14 @@ deploy:
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
 
-    # Отладочные команды
+    # Проверка переменной SSH_HOST
     - echo "Проверка переменной SSH_HOST: $SSH_HOST"
+
+    # Отладочные команды для ssh-keyscan
     - set -x  # Включаем подробный вывод
     - ssh-keyscan -H -p 22 "$SSH_HOST" > ~/.ssh/known_hosts
     - set +x   # Выключаем подробный вывод
     - chmod 644 ~/.ssh/known_hosts
 
-    # Дополнительные проверки (опционально)
-    - echo "Проверка подключения к SSH-хосту:"
+    # Проверка подключения (опционально)
     - nc -zvw3 "$SSH_HOST" 22 || true
