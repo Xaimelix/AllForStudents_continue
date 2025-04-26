@@ -10,8 +10,9 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_IMAGE: "your_project_image"
   PROJECT_DIR: "/opt/project"
-  SSH_PORT: "22"
-
+  SSH_PORT: "22" 
+  SERVER_IP: "" 
+  
 image: docker:24.0.7
 
 services:
@@ -21,9 +22,18 @@ before_script:
   - apk add --no-cache openssh-client rsync
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
-  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
   - chmod 600 ~/.ssh/id_rsa
-  - ssh-keyscan -p $SSH_PORT -H $SERVER_IP >> ~/.ssh/known_hosts
+  - |
+    if [ -z "$SSH_PORT" ]; then
+      echo "ERROR: SSH_PORT is not set"
+      exit 1
+    fi
+    if [ -z "$SERVER_IP" ]; then
+      echo "ERROR: SERVER_IP is not set"
+      exit 1
+    fi
+  - ssh-keyscan -p $SSH_PORT -t rsa $SERVER_IP >> ~/.ssh/known_hosts
 
 build:
   stage: build
@@ -41,6 +51,13 @@ deploy:
   when: manual
   script:
     - |
+      # Добавляем проверку подключения
+      ssh -p $SSH_PORT -T -o ConnectTimeout=5 $SSH_USER@$SERVER_IP exit
+      if [ $? -ne 0 ]; then
+        echo "ERROR: SSH connection failed"
+        exit 1
+      fi
+
       rsync -avz -e "ssh -p $SSH_PORT" \
         --exclude='.git' \
         --exclude='venv' \
