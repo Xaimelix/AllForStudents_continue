@@ -9,7 +9,7 @@ from data.admin import Admin
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from api.resources import Application_request, RoomResource
+from api.resources import Application_request, RoomResource, StudentResource, HostelResource
 from api.routes import initialize_routes
 from flask_restful import Api
 
