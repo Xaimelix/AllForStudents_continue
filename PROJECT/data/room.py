@@ -16,4 +16,5 @@ class Room(SqlAlchemyBase, UserMixin):
     sex = sqlalchemy.Column(sqlalchemy.Boolean)
     side = sqlalchemy.Column(sqlalchemy.String)
 
-    student = sqlalchemy.orm.relationship('student', back_populates='room')
+
+    students = sqlalchemy.orm.relationship('Student', back_populates='room')

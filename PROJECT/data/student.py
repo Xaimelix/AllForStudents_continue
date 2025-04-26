@@ -16,7 +16,9 @@ class Student(SqlAlchemyBase, UserMixin):
     course = sqlalchemy.Column(sqlalchemy.Integer)
     about = sqlalchemy.Column(sqlalchemy.String)
     sex = sqlalchemy.Column(sqlalchemy.Boolean)
-    room = sqlalchemy.orm.relationship('room', back_populates='student')
+
+
+    room = sqlalchemy.orm.relationship('Room', back_populates='students')
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
