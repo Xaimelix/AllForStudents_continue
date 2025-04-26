@@ -7,9 +7,10 @@ include:
 
 .global-variables:
   variables:
-    SSH_USER: "$NAME_VM"
-    SSH_HOST: "$HOST"
-    SSH_PRIVATE_KEY_BASE64: "$SSH_KEY"
+    SSH_USER: "$ENV_SSH_USER"
+    SSH_HOST: "$ENV_SSH_HOST"
+    SSH_PRIVATE_KEY_BASE64: "$ENV_PRIVATE_KEY_BASE64"
+
 
 stages:
   - build
