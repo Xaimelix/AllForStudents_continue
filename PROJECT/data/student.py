@@ -16,6 +16,7 @@ class Student(SqlAlchemyBase, UserMixin):
     course = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     about = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     sex = sqlalchemy.Column(sqlalchemy.Boolean)
+    admin = sqlalchemy.Column(sqlalchemy.Boolea, nullable=True)
 
     room = sqlalchemy.orm.relationship('Room', back_populates='students')
     application_request = sqlalchemy.orm.relationship('Application_request', back_populates='student')

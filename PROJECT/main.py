@@ -73,7 +73,7 @@ def registration():
         db_sess.add(student)
         db_sess.commit()
         db_sess.close()
-        return redirect('/')
+        return redirect('/login')
     return render_template('registration.html', form=form)
 
 
