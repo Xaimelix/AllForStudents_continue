@@ -1,6 +1,5 @@
 from flask import Flask, redirect, render_template
-from flask_login import login_user
-
+from flask_login import LoginManager, login_user, current_user, logout_user
 from data import db_session
 from data.student import Student
 from form.loginform import LoginForm
@@ -8,15 +7,26 @@ from form.registrationform import RegistrationForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 
 def main():
     db_session.global_init("db/database.db")
     app.run()
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    db_sess = db_session.create_session()
+    return db_sess.query(Student).get(user_id)
+
+
 @app.route('/')
 def main_page():
-    return "Hello world"
+    if not current_user.is_authenticated:
+        return "Hello world"
+    return f"{current_user.name, current_user.surname}"
 
 
 @app.route('/me')
@@ -37,8 +47,6 @@ def room(id):
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
     form = RegistrationForm()
-    print(form.email.data)
-    print(form.is_submitted())
     if form.validate_on_submit():
         if form.password.data != form.repeat_password.data:
             return render_template('registration.html', form=form, message='Пароли не совпадают')
@@ -73,6 +81,12 @@ def login():
         db_sess.close()
         return render_template('login.html', form=form, message='Неверно введён логин или пароль')
     return render_template('login.html', form=form)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect('/')
 
 
 @app.route('/settings')
