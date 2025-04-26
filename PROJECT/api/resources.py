@@ -1,9 +1,9 @@
 from flask_restful import Resource, reqparse
-from data.db_session import create_session
-from data.application_request import Application_request
-from data.student import Student
-from data.room import Room
-from data.hostel import Hostel
+from PROJECT.data.db_session import create_session
+from PROJECT.data.application_request import Application_request
+from PROJECT.data.student import Student
+from PROJECT.data.room import Room
+from PROJECT.data.hostel import Hostel
 from datetime import datetime
 
 # --- Парсер для ApplicationRequestResource (для методов POST/PUT) ---
