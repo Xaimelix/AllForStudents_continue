@@ -11,6 +11,7 @@ include:
     SSH_HOST: "$ENV_SSH_HOST"
     SSH_PRIVATE_KEY_BASE64: "$ENV_PRIVATE_KEY_BASE64"
 
+
 stages:
   - build
   - deploy
@@ -19,10 +20,6 @@ build:
   stage: build
   extends:
     - .build
-  # Опционально: добавьте специфичные для build команды
-  script:
-    - echo "Building the project..."
-    - your-build-command-here
 
 deploy:
   stage: deploy
@@ -30,22 +27,4 @@ deploy:
     - .docker_run
     - .global-variables
   variables:
-    OPT_DOCKER: "-p 8080:8080"
-  before_script:
-    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-    - printf "%s" "$SSH_PRIVATE_KEY_BASE64" | base64 -d > ~/.ssh/id_rsa
-    - chmod 400 ~/.ssh/id_rsa
-    # Проверка переменных
-    - 'echo "SSH_USER: $SSH_USER"'
-    - 'echo "SSH_HOST: ${SSH_HOST}"'
-    - 'echo "SSH_PRIVATE_KEY_BASE64: ${SSH_PRIVATE_KEY_BASE64:0:10}..."'
-    # Остальные команды
-    - eval $(ssh-agent -s)
-    - ssh-add ~/.ssh/id_rsa
-    - ssh-keyscan -H "$SSH_HOST" > ~/.ssh/known_hosts
-
-
-  script:
-    - echo "Deploying to $SSH_HOST..."
-    # Ваши команды деплоя через SSH
-    - ssh "$SSH_USER@$SSH_HOST" "docker run $OPT_DOCKER your-image"
+    OPT_DOCKER: "-p 80:80"
