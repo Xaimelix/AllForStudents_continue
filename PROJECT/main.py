@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, redirect, render_template, jsonify, request
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from data import db_session
@@ -67,8 +69,15 @@ CORS(app)
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
 
+def init_db():
+    # Используйте относительный путь от корня проекта
+    db_path = os.path.join(os.path.dirname(__file__), "db/database.db")
+    print(f"Initializing database at: {db_path}")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    db_session.global_init(db_path)
+
 def main():
-    db_session.global_init("db/database.db")
+    init_db()
     app.run(port=80)
 
 
