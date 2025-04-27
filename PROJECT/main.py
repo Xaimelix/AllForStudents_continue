@@ -9,12 +9,11 @@ from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from PROJECT.api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, \
-    StudentListResource, HostelItemResource, HostelListResource, ReportResource
-from PROJECT.api.routes import initialize_routes
+from api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource
+from api.routes import initialize_routes
 from flask_restful import Api
 from flask_cors import CORS
-import os
+import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
@@ -65,8 +64,6 @@ initialize_routes(api)
 # Лучше использовать более строгие настройки CORS в продакшене.
 # Строка ниже решает проблему "TypeError: NetworkError when attempting to fetch resource." в Swagger UI.
 CORS(app)
-
-
 # Если тебе нужно ограничить разрешенные источники, можно сделать так:
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
@@ -92,11 +89,12 @@ def load_user(user_id):
 
 @app.route('/')
 def main_page():
-    return render_template("basepage.html")
-
+    if not current_user.is_authenticated:
+        return render_template("matthew1.html")
 
 @app.route('/test')
 def second_page():
+    return "Hello, world!"
     return f"{current_user.name, current_user.surname}"
 
 
@@ -104,7 +102,7 @@ def second_page():
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return render_template('aboutuser.html', item=current_user)
+    return f'thats my page'
 
 
 @app.route('/hostels')
@@ -129,16 +127,16 @@ def registration():
         if db_sess.query(Student).filter(Student.login == form.email.data).first():
             return render_template('registration.html', form=form,
                                    message='Пользователь с такой электронной почтой уже существует')
-        student = Student(
-            login=form.email.data,
-            name=form.name.data,
-            surname=form.surname.data,
-            sex=1
-        )
-        student.set_password(form.password.data)
-        db_sess.add(student)
-        db_sess.commit()
-        db_sess.close()
+        student = {
+            'login':form.email.data,
+            'name':form.name.data,
+            'surname':form.surname.data,
+            'sex':1
+        }
+        print(student)
+        student['password'] = Student.set_password(form.password.data)
+        print(student)
+        requests.post()
         return redirect('/login')
     return render_template('registration.html', form=form)
 
@@ -154,7 +152,7 @@ def login():
         if student and student.check_password(form.password.data):
             login_user(student, remember=form.remember_me.data)
             db_sess.close()
-            return redirect("/applications")
+            return redirect("/")
         db_sess.close()
         return render_template('login.html', form=form, message='Неверно введён логин или пароль')
     return render_template('login.html', form=form)
@@ -166,12 +164,23 @@ def logout():
     return redirect('/')
 
 
-@app.route('/applications')
-def admin():
-    if current_user.admin != 1:
-        return redirect('/')
-    return render_template('base.html')
+@app.route('/settings')
+def settings():
+    return 'settings'
 
+
+@app.route('/applications')
+def applications():
+    return render_template('applications.html', user=current_user)
+
+@app.route('/admin')
+def admin():
+    return render_template('admin.html', user=current_user)
+
+
+@app.route('/admin_profile')
+def admin_profile():
+    return render_template('admin_profile.html', user=current_user)
 
 @app.route('/add', methods=['GET'])
 def add():

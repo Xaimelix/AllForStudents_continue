@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="shortcut icon" href="static/icon.png" type="image/x-icon">
+    <link href="/static/styles.css" rel="stylesheet" type="text/css"></link>
+    <link href="/static/login.css" rel="stylesheet" type="text/css"></link>
+    <style>
+        /* Твои CSS стили для блоков заявок */
+        #applicationRequestsList {
+            margin-top: 20px; /* Пример верхнего отступа */
+        }
+
+        .application-request-item {
+            border: 1px solid #ccc; /* Пример рамки для блока */
+            padding: 15px; /* Внутренний отступ */
+            margin-bottom: 15px; /* Отступ между блоками заявок */
+            border-radius: 8px; /* Скругленные углы */
+            background-color: #f9f9f9; /* Легкий фон */
+
+            display: flex; /* Включаем Flexbox для расположения дочерних элементов */
+            justify-content: space-between; /* Распределяем пространство между элементами */
+            align-items: center; /* Выравниваем элементы по центру вертикали */
+        }
+
+        .request-info {
+            flex-grow: 1; /* Позволяем блоку с информацией занимать все доступное пространство */
+            margin-right: 20px; /* Отступ справа от информации перед кнопками */
+        }
+
+        .request-actions {
+            /* Кнопки будут справа. Можно добавить стили для расположения самих кнопок, если их несколько. */
+            display: flex; /* Используем Flexbox для кнопок, чтобы они были в ряд */
+            flex-direction: column; /* Размещаем кнопки друг под другом */
+            gap: 10px; /* Промежуток между кнопками */
+        }
+
+        .request-info h3 {
+            margin-top: 0; /* Убираем стандартный верхний отступ у заголовка */
+        }
+
+        .request-info p {
+            margin-bottom: 5px; /* Небольшой отступ между параграфами информации */
+        }
+
+        .request-info p:last-child {
+            margin-bottom: 0; /* Убираем нижний отступ у последнего параграфа */
+        }
+
+        .approve-button,
+        .reject-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .approve-button {
+            background-color: #4CAF50; /* Зеленый фон для одобрения */
+            color: white;
+        }
+
+        .approve-button:hover {
+            background-color: #45a049;
+        }
+
+        .reject-button {
+            background-color: #f44336; /* Красный фон для отклонения */
+            color: white;
+        }
+
+        .reject-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mt-3">
+         <h2>Заявки на переселение (статус 0 - на рассмотрении, 1 - принята, 2 - отклонена)</h2>
+         <div id="applicationRequestsList"> 
+             <p>Загрузка заявок...</p> </div>
+     </div>
+
+
+    <script>
+    // URL твоего API эндпоинта для получения всех заявок
+    const apiUrl = 'http://localhost:5000/api/application_requests'; // <-- Укажи правильный URL, если он отличается
+
+    // URL твоего API эндпоинта для обновления статуса заявки (PUT запрос по ID)
+    // Он должен соответствовать маршруту ApplicationRequestItemResource: /api/application_requests/<int:request_id>
+    const updateStatusApiUrl = 'http://localhost:5000/api/application_requests/'; // Базовый URL, к которому добавим ID заявки
+
+
+    // Функция для получения и отображения заявок со статусом 0
+    async function fetchAndDisplayPendingApplicationRequests() {
+        // Ищем элемент списка ВНУТРИ функции
+        const applicationRequestsListElement = document.getElementById('applicationRequestsList');
+
+        // Проверяем, найден ли элемент. Если нет, выводим ошибку и останавливаемся.
+        if (!applicationRequestsListElement) {
+            console.error("HTML элемент с ID 'applicationRequestsList' не найден на странице!");
+            const body = document.querySelector('body');
+            if (body) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.color = 'red';
+                errorDiv.textContent = "Ошибка загрузки: элемент для списка заявок не найден!";
+                body.prepend(errorDiv);
+            }
+            return; // Прекращаем выполнение функции
+        }
+
+        // Очищаем текущее содержимое элемента списка и ставим сообщение о загрузке
+        applicationRequestsListElement.innerHTML = '<p>Загрузка заявок...</p>';
+
+
+        try {
+            console.log(`Выполняется GET запрос к: ${apiUrl}`);
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                    // TODO: Добавь заголовок авторизации, если он нужен
+                }
+            });
+
+            console.log('Получен HTTP статус ответа:', response.status);
+            if (!response.ok) {
+                 const errorText = await response.text();
+                 console.error('Ответ сервера при ошибке:', errorText);
+                 throw new Error(`Ошибка HTTP: ${response.status}`);
+             }
+
+            const data = await response.json();
+
+            console.log('Данные получены от API:', data);
+            console.log('Тип data:', typeof data);
+
+
+            if (data && typeof data === 'object' && Array.isArray(data.requests)) {
+                applicationRequestsListElement.innerHTML = ''; // Очищаем сообщение о загрузке
+
+                console.log('Исходный список заявок (data.requests):', data.requests);
+
+
+                // Фильтруем заявки по статусу 0
+                const pendingRequests = data.requests.filter(request => {
+                     console.log(`Проверяем заявку ID ${request.id}: статус "${request.status}" (тип: ${typeof request.status})`);
+                    return request.status === '0';
+                });
+
+
+                console.log('Отфильтрованный список заявок (pendingRequests):', pendingRequests);
+
+
+                if (pendingRequests.length === 0) {
+                    applicationRequestsListElement.innerHTML = '<p>Нет заявок на переселение в статусе "0".</p>';
+                } else {
+                    // Перебираем отфильтрованные заявки и создаем HTML для их отображения
+                    pendingRequests.forEach(request => {
+                        console.log('Генерируем HTML для заявки ID:', request.id);
+
+                        const requestElement = document.createElement('div');
+                        requestElement.classList.add('application-request-item');
+                        requestElement.dataset.requestId = request.id;
+
+                        requestElement.innerHTML = `
+                            <div class="request-info">
+                                <h3>Заявка #${request.id}</h3>
+                                <p>Статус: ${request.status}</p>
+                                <p>Дата въезда: ${request.date_entr || 'Не указана'}</p>
+                                <p>Дата выезда: ${request.date_exit || 'Не указана'}</p>
+                                <p>ID комнаты: ${request.room_id}</p>
+                                <p>ID студента: ${request.student_id}</p>
+                            </div>
+                            <div class="request-actions">
+                                <button class="approve-button" data-request-id="${request.id}">Одобрить</button>
+                                <button class="reject-button" data-request-id="${request.id}">Отклонить</button>
+                            </div>
+                        `;
+
+                        applicationRequestsListElement.appendChild(requestElement);
+                    });
+
+                    // Добавляем слушателей событий для кнопок после того, как все заявки добавлены
+                    // ПЕРЕДАЕМ applicationRequestsListElement КАК АРГУМЕНТ
+                    attachButtonListeners(applicationRequestsListElement);
+
+                }
+
+            } else {
+                console.error('Неверный формат данных от API:', data);
+                applicationRequestsListElement.innerHTML = '<p>Не удалось загрузить данные заявок из-за ошибки формата.</p>';
+            }
+
+        } catch (error) {
+            console.error('Ошибка при получении или обработке заявок:', error);
+            if (applicationRequestsListElement) {
+                applicationRequestsListElement.innerHTML = `<p>Произошла ошибка при загрузке или обработке заявок: ${error.message}</p>`;
+            } else {
+                 console.error('Не удалось отобразить ошибку на странице, так как элемент списка не найден.');
+            }
+        }
+    }
+
+    // Функция для добавления обработчиков кликов на кнопки
+    // ФУНКЦИЯ ТЕПЕРЬ ПРИНИМАЕТ АРГУМЕНТ listElement
+    function attachButtonListeners(listElement) {
+         // Используем переданный listElement для поиска кнопок внутри него
+        const approveButtons = listElement.querySelectorAll('.approve-button');
+        approveButtons.forEach(button => {
+            // Удаляем старые слушатели, чтобы избежать их дублирования при повторных вызовах fetchAndDisplayPendingApplicationRequests
+            button.removeEventListener('click', handleApproveClick);
+            button.addEventListener('click', handleApproveClick);
+        });
+
+        const rejectButtons = listElement.querySelectorAll('.reject-button');
+        rejectButtons.forEach(button => {
+             // Удаляем старые слушатели
+            button.removeEventListener('click', handleRejectClick);
+            button.addEventListener('click', handleRejectClick);
+        });
+    }
+
+    // Функции для обработки кликов по кнопкам Одобрить/Отклонить
+    async function handleApproveClick(event) {
+        const requestId = event.target.dataset.requestId; // Получаем ID заявки из атрибута data-request-id
+        console.log(`Нажата кнопка "Одобрить" для заявки ID: ${requestId}`);
+
+        try {
+            // Отправляем PUT запрос к API для изменения статуса заявки на "1" (одобрено)
+            console.log(`Отправка PUT запроса для одобрения заявки ID ${requestId}`); // Логгирование запроса
+            const response = await fetch(`${updateStatusApiUrl}${requestId}`, { // Используем базовый URL + ID
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json' // Указываем, что отправляем JSON
+                    // TODO: Добавь заголовок авторизации, если он нужен
+                },
+                body: JSON.stringify({ status: '1' }) // Отправляем JSON с новым статусом '1'
+            });
+
+            console.log(`Получен ответ на PUT запрос для одобрения заявки ID ${requestId}. Статус: ${response.status}`); // Логгирование ответа
+
+            // Проверяем, успешен ли был запрос
+            if (response.ok) {
+                console.log(`Заявка ${requestId} одобрена.`);
+                // Обновить интерфейс: удалить этот блок заявки с страницы
+                const requestElement = event.target.closest('.application-request-item'); // Находим родительский элемент заявки
+                if (requestElement) {
+                    requestElement.remove(); // Удаляем элемент
+                }
+                 alert(`Заявка ${requestId} одобрена.`); // Оповещение пользователя
+            } else {
+                // Получаем сообщение об ошибке от сервера, если оно есть в формате JSON
+                const errorData = await response.json();
+                const errorMessage = errorData.message || `Ошибка HTTP: ${response.status}`;
+                console.error(`Ошибка при одобрении заявки ${requestId}: ${errorMessage}`);
+                alert(`Не удалось одобрить заявку ${requestId}. ${errorMessage}`); // Показываем ошибку пользователю
+            }
+
+        } catch (error) {
+            console.error('Ошибка при выполнении запроса на одобрение:', error);
+             alert(`Произошла ошибка при одобрении заявки ${requestId}: ${error.message}`); // Показываем ошибку пользователю
+        }
+    }
+
+    async function handleRejectClick(event) {
+        const requestId = event.target.dataset.requestId; // Получаем ID заявки из атрибута data-request-id
+        console.log(`Нажата кнопка "Отклонить" для заявки ID: ${requestId}`);
+
+         try {
+            // Отправляем PUT запрос к API для изменения статуса заявки на "2" (отклонено)
+            console.log(`Отправка PUT запроса для отклонения заявки ID ${requestId}`); // Логгирование запроса
+            const response = await fetch(`${updateStatusApiUrl}${requestId}`, { // Используем базовый URL + ID
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json' // Указываем, что отправляем JSON
+                    // TODO: Добавь заголовок авторизации, если он нужен
+                },
+                body: JSON.stringify({ status: '2' }) // Отправляем JSON с новым статусом '2'
+            });
+
+            console.log(`Получен ответ на PUT запрос для отклонения заявки ID ${requestId}. Статус: ${response.status}`); // Логгирование ответа
+
+            // Проверяем, успешен ли был запрос
+            if (response.ok) {
+                console.log(`Заявка ${requestId} отклонена.`);
+                // Обновить интерфейс: удалить этот блок заявки с страницы
+                const requestElement = event.target.closest('.application-request-item'); // Находим родительский элемент заявки
+                 if (requestElement) {
+                     requestElement.remove(); // Удаляем элемент
+                 }
+                  alert(`Заявка ${requestId} отклонена.`); // Оповещение пользователя
+            } else {
+                 // Получаем сообщение об ошибке от сервера
+                const errorData = await response.json();
+                const errorMessage = errorData.message || `Ошибка HTTP: ${response.status}`;
+                console.error(`Ошибка при отклонении заявки ${requestId}: ${errorMessage}`);
+                 alert(`Не удалось отклонить заявку ${requestId}. ${errorMessage}`); // Показываем ошибку пользователю
+            }
+
+        } catch (error) {
+            console.error('Ошибка при выполнении запроса на отклонение:', error);
+             alert(`Произошла ошибка при отклонении заявки ${requestId}: ${error.message}`); // Показываем ошибку пользователю
+        }
+    }
+
+
+    // Вызываем функцию для загрузки и отображения заявок со статусом 0, когда страница загрузится
+    document.addEventListener('DOMContentLoaded', fetchAndDisplayPendingApplicationRequests);
+
+    </script>
+
+    </body>
+</html>

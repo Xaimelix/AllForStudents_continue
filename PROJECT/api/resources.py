@@ -24,12 +24,6 @@ application_request_parser.add_argument('date_exit', type=str, help='Дата в
 application_request_parser.add_argument('room_id', type=int, required=True, help='ID комнаты обязателен', location='form') # <-- Добавлено location='form'
 application_request_parser.add_argument('student_id', type=int, required=True, help='ID студента обязателен', location='form') # <-- Добавлено location='form'
 
-# application_request_parser = reqparse.RequestParser()
-# application_request_parser.add_argument('status', type=str, required=True, help='Статус заявки обязателен')
-# application_request_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)')
-# application_request_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)')
-# application_request_parser.add_argument('room_id', type=int, required=True, help='ID комнаты обязателен')
-# application_request_parser.add_argument('student_id', type=int, required=True, help='ID студента обязателен')
 
 # --- Новый класс для операций над коллекцией заявок ---
 class ApplicationRequestsListResource(Resource):
@@ -183,6 +177,10 @@ class ApplicationRequestsListResource(Resource):
             db_sess.close()
 
 
+application_status_parser = reqparse.RequestParser()
+# Указываем, что ожидаем 'status' в теле запроса в формате JSON
+application_status_parser.add_argument('status', type=str, required=True, help='Новый статус заявки обязателен', location='json')
+
 # --- Новый класс для операций над отдельной заявкой по ID ---
 class ApplicationRequestItemResource(Resource):
     def get(self, request_id):
@@ -283,6 +281,92 @@ class ApplicationRequestItemResource(Resource):
         except Exception as e:
             db_sess.rollback()
             return {'message': f'Ошибка при удалении заявки с ID {request_id}: {e}'}, 500
+        finally:
+            db_sess.close()
+    def put(self, request_id):
+        """Обновление статуса заявки по ID.
+        ---
+        tags:
+          - Application Requests
+        parameters:
+          - name: request_id
+            in: path
+            type: integer
+            required: true
+            description: ID заявки для обновления
+          - name: body
+            in: body
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: Новый статус заявки ('1' для одобрения, '2' для отклонения)
+              required:
+                - status
+        responses:
+          200:
+            description: Статус заявки успешно обновлен
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          404:
+            description: Заявка не найдена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          400:
+            description: Неверный формат данных или отсутствует статус
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при обновлении статуса заявки
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        args = application_status_parser.parse_args(strict=True) # Используем новый парсер для статуса, strict=True для игнорирования других полей
+        new_status = args.get('status') # Получаем новый статус
+
+        if new_status is None:
+            return {'message': 'В теле запроса должен быть указан новый статус ("status").'}, 400
+
+        # TODO: Добавь валидацию статуса, чтобы принимать только '1' или '2'
+        if new_status not in ['1', '2']:
+             return {'message': 'Неверное значение статуса. Допустимы только "1" (одобрено) или "2" (отклонено).'}, 400
+
+
+        db_sess = create_session()
+        try:
+            # Ищем заявку по ID
+            request_to_update = db_sess.query(Application_request).filter(Application_request.id == request_id).first()
+
+            # Если заявка не найдена, возвращаем 404
+            if not request_to_update:
+                return {'message': f'Заявка с ID {request_id} не найдена'}, 404
+
+            # Обновляем статус
+            request_to_update.status = new_status
+
+            # Коммитим изменения
+            db_sess.commit()
+
+            # Возвращаем успешный ответ
+            return {'message': f'Статус заявки с ID {request_id} успешно обновлен на "{new_status}"'}, 200
+
+        except Exception as e:
+            # Откатываем изменения в случае ошибки и возвращаем 500
+            db_sess.rollback()
+            return {'message': f'Ошибка при обновлении статуса заявки с ID {request_id}: {e}'}, 500
         finally:
             db_sess.close()
 
@@ -1139,7 +1223,8 @@ class ReportResource(Resource):
                     'total_capacity': hostel.total_capacity,
                     'total_occupied': hostel.total_occupied,
                     'free_spots': free_spots,
-                    'occupancy_percentage': occupancy_percentage
+                    'occupancy_percentage': occupancy_percentage,
+                    'total_capacity': hostel.total_capacity
                 })
 
             #--- 2. Сбор данных о популярных комнатах ---
@@ -1210,17 +1295,16 @@ class ReportResource(Resource):
                     print(f"Общежитие {hostel['address']} имеет 0 студентов и 0 свободных мест, диаграмма не будет построена.")
                     continue # Пропускаем это общежитие
 
-
                 plt.figure(figsize=(6, 6)) # Размер фигуры для диаграммы
                 plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
                 plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
                 plt.title(f"Заполненность общежития: {hostel['address']}") # Заголовок диаграммы
 
                 if hostel['id'] in popular_rooms_by_hostel:
-                    pdf.cell(0, 10, txt="Самые занятые комнаты:", ln=True, align='L')
+                    pdf.cell(0, 10, txt="Самые популярные комнаты:", ln=True, align='L')
                     for room in popular_rooms_by_hostel[hostel['id']]['rooms']:
                         # Здесь можно добавить текст для каждой комнаты, например:
-                        pdf.cell(0, 10, txt=f"Комната ID {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
+                        pdf.cell(0, 10, txt=f"Комната {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
                         pdf.ln(5) # Небольшой отступ после информации о комнатах
 
 
@@ -1235,11 +1319,11 @@ class ReportResource(Resource):
                 # Убедимся, что используем шрифт с кириллицей, если он успешно добавлен
 
                 pdf.cell(0, 10, txt=f"Общежитие: {hostel['address']}", ln=True, align='L')
-
                 # Добавляем изображение диаграммы в PDF
                 # w=100 - пример ширины изображения, можешь настроить под свой формат страницы
                 pdf.image(img_buffer, x=None, y=None, w=100)                
                 pdf.ln(10) # Отступ после диаграммы
+                pdf.cell(0, 10, txt=f"Общая вместимость: {hostel['total_capacity']}", ln=True, align='L')
 
             
             pdf_output = pdf.output(dest='S') # TODO: Возможно, 'utf-8' или другой кодек с поддержкой кириллицы, если настроены шрифты
