@@ -24,3 +24,4 @@ rpds-py==0.24.0
 six==1.17.0
 Flask-WTF==1.2.2
 Flask-RESTful==0.3.10
+matplotlib==3.10.1
