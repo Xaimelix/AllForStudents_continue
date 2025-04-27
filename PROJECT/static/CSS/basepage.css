@@ -23,43 +23,33 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px; /* Добавляем промежуток между элементами */
+    gap: 20px;
+    padding: 0 20px;
+    flex-wrap: wrap; /* Разрешаем перенос элементов */
 }
 
-.user-info {
-    flex: 1;
-    line-height: normal;
-    position: absolute;
-    margin: 1670px;
-    padding-right: 20px;
-    font-family: 'Open Sans', sans-serif;
-    font-weight: 600;
-    font-size: 18px;
-    color: #555;
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: none; /* По умолчанию скрыто */
-}
+
 
 .nav-items {
     display: flex;
-    gap: 40px;
-    position: absolute; /* Абсолютное позиционирование */
-    left: 50%; /* Центрирование по горизонтали */
-    transform: translateX(-50%); /* Точное центрирование */
+    gap: 2vw; /* Относительный отступ */
+    position: static; /* Убираем абсолютное позиционирование */
+    transform: none;
+    margin: 0 auto; /* Центрируем */
 }
+
 
 .nav-item {
     color: #b0b0b0;
     text-decoration: none;
     font-family: 'Open Sans', sans-serif;
     font-weight: 500;
-    font-size: 20px;
+    font-size: clamp(14px, 1.7vw, 20px); /* Адаптивный размер */
     padding: 8px 15px;
     border-radius: 4px;
     transition: all 0.3s ease;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 .nav-item:hover {
     transform: scale(1.1);
@@ -73,11 +63,11 @@ body {
     text-decoration: none;
     font-family: 'Open Sans', sans-serif;
     font-weight: 800;
-    font-size: 40px;
+    font-size: clamp(24px, 3.5vw, 40px); /* Адаптивный размер */
     padding: 8px 15px;
     border-radius: 4px;
-    
     letter-spacing: 0.5px;
+    white-space: nowrap; /* Запрет переноса текста */
 }
 .userlogo {
     display: block; /* Делаем ссылку блочным элементом */
@@ -89,7 +79,7 @@ body {
     border-radius: 50%;
     background-color: #9a9a9a;
     overflow: hidden;
-    margin: 0px 250px;
+    margin: 0px 20px;
     transition: all 0.3s ease;
 }
 
