@@ -55,7 +55,7 @@
             
             // Перенаправление или другие действия после успешной регистрации
             setTimeout(() => {
-                window.location.href = '/login.html'; // Пример перенаправления
+                window.location.href = "../../templates/HTML/nolog.html"; // Исправленный путь
             }, 1500);
 
         } catch (error) {

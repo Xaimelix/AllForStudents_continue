@@ -8,8 +8,8 @@
      <!-- ... остальные метатеги ... -->
 
 
-     <link rel="stylesheet" href="../static/CSS/basepage.css">
->>>>>>> 7915efdee7490f6993e2009a6f59ec6eb46d5fc5
+     <link rel="stylesheet" href="../../static/CSS/nolog.css">
+
 </head>
     
 <body>
@@ -33,12 +33,9 @@
                 <a href="#" class="nav-item">Как забронировать?</a>
                 <a href="#" class="nav-item">Общежития</a> 
             </div>
-
-            <a href="../../PROJECT/templates/HTML/registration.html" class="userlogo">
-                <div class="REGISTATION">
-                    <h1 class="REGISTR">Зарегистрироваться</h1>
-                </div>
-
+            <a href="../../templates/registration.html" class="userlogo">
+                <h1 class="REGISTR">Зарегистрироваться</h1>
+            </a>
         </nav>
     </header>
     <div class="MAIN-CONTAINER">
@@ -81,14 +78,14 @@
             <h1 class="shortinfo">Чистота! Качество! Простор! Удобство!...</h1>
         </div>
         <div class="image-box">
-            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 1">
-            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 2">
-            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 3">
+            <img src="../../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 1">
+            <img src="../../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 2">
+            <img src="../../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 3">
         </div>
 
         <div class="takeit">
             <div class="btntake"></div>
-            <a href="../templates/HTML/finding.html" class="take-link">
+            <a href="../../templates/HTML/finding.html" class="take-link">
               <h1 class="take">ЗАБРОНИРОВАТЬ!</h1>
             </a>
           </div>
@@ -108,16 +105,6 @@
     
 
 
-`   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const userInfo = document.getElementById('userInfo');
-        const storedName = localStorage.getItem('userFullName');
-        
-        if(storedName) {
-            userInfo.textContent = storedName;
-            userInfo.style.display = 'block';
-        }
-    });
-    </script>
+  
 </body>
 </html>
