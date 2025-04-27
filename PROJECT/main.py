@@ -69,7 +69,7 @@ CORS(app)
 
 def main():
     db_session.global_init("db/database.db")
-    app.run(port=80)
+    app.run(host='0.0.0.0', port=80)
 
 
 @login_manager.user_loader
