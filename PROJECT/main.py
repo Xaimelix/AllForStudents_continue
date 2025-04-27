@@ -9,7 +9,7 @@ from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from api.resources import Application_request, RoomResource, StudentResource, HostelResource, ReportResource
+from api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource
 from api.routes import initialize_routes
 from flask_restful import Api
 from flask_cors import CORS
