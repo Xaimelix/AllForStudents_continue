@@ -85,15 +85,14 @@ def main_page():
 
 @app.route('/test')
 def second_page():
-    return "Hello, world!"
     return f"{current_user.name, current_user.surname}"
 
 
 @app.route('/me')
-def myself():
+def profile():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return f'thats my page'
+    return render_template('profile.html')
 
 
 @app.route('/hostel/<id>')
@@ -148,6 +147,32 @@ def login():
         return render_template('login.html', form=form, message='Неверно введён логин или пароль')
     return render_template('login.html', form=form)
 
+
+@app.route('/login_admin', methods=['GET', 'POST'])
+def login_admin():
+    if current_user.is_authenticated:
+        return redirect('/')
+    form = LoginForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        student = db_sess.query(Student).filter(Student.login == form.login.data).first()
+        if student and student.check_password(form.password.data):
+            login_user(student, remember=form.remember_me.data)
+            db_sess.close()
+            return redirect("/")
+        db_sess.close()
+        return render_template('login_admin.html', form=form, message='Неверно введён логин или пароль')
+    return render_template('login_admin.html', form=form)
+
+
+@app.route('/admin', methods=['GET'])
+def admin_panel():
+    return render_template('base.html', user='oienifn')
+
+
+@app.route('/admin_profile', methods=['GET'])
+def admin_profile():
+    return render_template('admin_profile.html')
 
 @app.route('/logout')
 def logout():
