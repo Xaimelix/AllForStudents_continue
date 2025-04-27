@@ -16,6 +16,7 @@ from api.routes import initialize_routes
 from flask_restful import Api
 from flask_cors import CORS
 import requests
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
@@ -83,40 +84,39 @@ def main():
     app.run(host="0.0.0.0", port=80)
 
 
+# загрузка пользователя, прошедшего логин
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(Student).get(user_id)
 
 
+# основная страница
 @app.route('/')
 def main_page():
-    if not current_user.is_authenticated:
-        return render_template("matthew1.html")
-
-@app.route('/test')
-def second_page():
-    return "Hello, world!"
-    return f"{current_user.name, current_user.surname}"
+    return render_template("basepage.html")
 
 
+# страница пользователя
 @app.route('/me')
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return f'thats my page'
+    return render_template('aboutuser.html', item=current_user)
 
 
+# страница общежитий
 @app.route('/hostels')
 def hostel():
     return render_template('finding.html')
 
 
-@app.route('/room/<id>')
-def room(id):
-    return f'Room: {id}'
+@app.route('/rooms')
+def room():
+    return render_template('application.html')
 
 
+# регистрация
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
     if current_user.is_authenticated:
@@ -143,6 +143,7 @@ def registration():
     return render_template('registration.html', form=form)
 
 
+# страница логина
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -166,14 +167,10 @@ def logout():
     return redirect('/')
 
 
-@app.route('/settings')
-def settings():
-    return 'settings'
-
-
 @app.route('/applications')
 def applications():
     return render_template('applications.html', user=current_user)
+
 
 @app.route('/admin')
 def admin():
