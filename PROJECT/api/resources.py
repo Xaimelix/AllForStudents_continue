@@ -1205,12 +1205,14 @@ class ReportResource(Resource):
                 func.sum(Room.max_cnt_student).label('total_capacity'), # Общая максимальная вместимость
                 func.sum(Room.cur_cnt_student).label('total_occupied') # Общее текущее количество студентов
             ).join(Room).group_by(Hostel.id, Hostel.address).all()
+            print(hostel_summary_data)
 
             # Результат будет списком кортежей или объектов, например:
             # [(hostel_id, address, total_rooms, total_capacity, total_occupied), ...]
 
             # Обработка данных для расчета свободных мест и процентов
             hostel_stats = []
+            
             for hostel in hostel_summary_data:
                 free_spots = hostel.total_capacity - hostel.total_occupied
                 # Процент заполненности по общежитию
@@ -1260,15 +1262,14 @@ class ReportResource(Resource):
             except Exception as e:
                 print(f"Ошибка при сборе данных о комнатах для популярности: {e}")
             
-
             # --- 4. Создание круговых диаграмм для каждого общежития и добавление их в PDF ---
             pdf = FPDF()
-            try:
-                font_path = 'PROJECT/static/fonts/DejaVuSans.ttf' # Путь к шрифту DejaVuSans.ttf
-                pdf.add_font('DejaVuSans', '', font_path, uni=True)
-                pdf.set_font('DejaVuSans', '', 12)
-            except RuntimeError:
-                pdf.set_font("Arial", size=12) # Вернуться к стандартному, если шрифт не работает
+            # try:
+            #     font_path = 'PROJECT/static/fonts/DejaVuSans.ttf' # Путь к шрифту DejaVuSans.ttf
+            #     pdf.add_font('DejaVuSans', '', font_path, uni=True)
+            #     pdf.set_font('DejaVuSans', '', 12)
+            # except RuntimeError:
+            pdf.set_font("Arial", size=12) # Вернуться к стандартному, если шрифт не работает
             # if hostel['id'] in popular_rooms_by_hostel:
             
             #     pdf.cell(0, 10, txt="Самые занятые комнаты:", ln=True, align='L')
@@ -1298,13 +1299,13 @@ class ReportResource(Resource):
                 plt.figure(figsize=(6, 6)) # Размер фигуры для диаграммы
                 plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
                 plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-                plt.title(f"Заполненность общежития: {hostel['address']}") # Заголовок диаграммы
+                plt.title(f"Filiness of the hostel: {hostel['address']}") # Заголовок диаграммы
 
                 if hostel['id'] in popular_rooms_by_hostel:
-                    pdf.cell(0, 10, txt="Самые популярные комнаты:", ln=True, align='L')
+                    pdf.cell(0, 10, txt="The most popular rooms:", ln=True, align='L')
                     for room in popular_rooms_by_hostel[hostel['id']]['rooms']:
                         # Здесь можно добавить текст для каждой комнаты, например:
-                        pdf.cell(0, 10, txt=f"Комната {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
+                        pdf.cell(0, 10, txt=f"Room {room['room_id']}: {room['cur_cnt_student']} students", ln=True, align='L')
                         pdf.ln(5) # Небольшой отступ после информации о комнатах
 
 
@@ -1318,12 +1319,12 @@ class ReportResource(Resource):
                 # Добавляем заголовок общежития в PDF
                 # Убедимся, что используем шрифт с кириллицей, если он успешно добавлен
 
-                pdf.cell(0, 10, txt=f"Общежитие: {hostel['address']}", ln=True, align='L')
+                pdf.cell(0, 10, txt=f"Hostel: {hostel['address']}", ln=True, align='L')
                 # Добавляем изображение диаграммы в PDF
                 # w=100 - пример ширины изображения, можешь настроить под свой формат страницы
                 pdf.image(img_buffer, x=None, y=None, w=100)                
                 pdf.ln(10) # Отступ после диаграммы
-                pdf.cell(0, 10, txt=f"Общая вместимость: {hostel['total_capacity']}", ln=True, align='L')
+                pdf.cell(0, 10, txt=f"Total capacity: {hostel['total_capacity']}", ln=True, align='L')
 
             
             pdf_output = pdf.output(dest='S') # TODO: Возможно, 'utf-8' или другой кодек с поддержкой кириллицы, если настроены шрифты
