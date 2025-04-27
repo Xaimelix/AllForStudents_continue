@@ -129,16 +129,17 @@ def registration():
         if db_sess.query(Student).filter(Student.login == form.email.data).first():
             return render_template('registration.html', form=form,
                                    message='Пользователь с такой электронной почтой уже существует')
-        student = {
-            'login':form.email.data,
-            'name':form.name.data,
-            'surname':form.surname.data,
-            'sex':1
-        }
-        print(student)
-        student['password'] = Student.set_password(form.password.data)
-        print(student)
-        requests.post()
+        student = Student(
+            login=form.email.data,
+            name=form.name.data,
+            surname=form.surname.data,
+            sex=1
+        )
+
+        student.set_password(form.password.data)
+        db_sess.add(student)
+        db_sess.commit()
+        db_sess.close()
         return redirect('/login')
     return render_template('registration.html', form=form)
 
