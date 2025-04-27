@@ -9,8 +9,8 @@ from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from api.resources import Application_request, RoomResource, StudentResource, HostelResource, ReportResource
-from api.routes import initialize_routes
+from PROJECT.api.resources import Application_request, RoomResource, StudentResource, HostelResource, ReportResource
+from PROJECT.api.routes import initialize_routes
 from flask_restful import Api
 from flask_cors import CORS
 
@@ -63,13 +63,15 @@ initialize_routes(api)
 # Лучше использовать более строгие настройки CORS в продакшене.
 # Строка ниже решает проблему "TypeError: NetworkError when attempting to fetch resource." в Swagger UI.
 CORS(app)
+
+
 # Если тебе нужно ограничить разрешенные источники, можно сделать так:
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
 
 def main():
     db_session.global_init("db/database.db")
-    app.run()
+    app.run(port=8000)
 
 
 @login_manager.user_loader
@@ -80,12 +82,11 @@ def load_user(user_id):
 
 @app.route('/')
 def main_page():
-    if not current_user.is_authenticated:
-        return render_template("matthew1.html")
+    return render_template("basepage.html")
+
 
 @app.route('/test')
 def second_page():
-    return "Hello, world!"
     return f"{current_user.name, current_user.surname}"
 
 
@@ -93,7 +94,7 @@ def second_page():
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return f'thats my page'
+    return render_template('aboutuser.html')
 
 
 @app.route('/hostel/<id>')
@@ -112,6 +113,7 @@ def registration():
         return redirect('/')
     form = RegistrationForm()
     if form.validate_on_submit():
+        print(123)
         if form.password.data != form.repeat_password.data:
             return render_template('registration.html', form=form, message='Пароли не совпадают')
         db_sess = db_session.create_session()
@@ -143,7 +145,7 @@ def login():
         if student and student.check_password(form.password.data):
             login_user(student, remember=form.remember_me.data)
             db_sess.close()
-            return redirect("/")
+            return redirect("/applications")
         db_sess.close()
         return render_template('login.html', form=form, message='Неверно введён логин или пароль')
     return render_template('login.html', form=form)
@@ -162,7 +164,10 @@ def settings():
 
 @app.route('/applications')
 def admin():
-    return 'applications'
+    if current_user.admin != 1:
+        return redirect('/')
+    return render_template('application.html')
+
 
 @app.route('/add', methods=['GET'])
 def add():
