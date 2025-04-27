@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: #ffffff;
+    line-height: 1.6;
+}
+.LIST {
+    max-width: 1820px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 50px;
+    box-sizing: border-box;
+}
+/* Стили шапки */
+.header {
+    width: 100%;
+    background-color: #f1f1f1;
+    padding: 10px 0;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    padding: 0 30px;
+    position: relative;
+}
+
+/* Логотип */
+.LOGOTIP {
+    color: #b0b0b0;
+    text-decoration: none;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 800;
+    font-size: 40px;
+    padding: 8px 15px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* Навигационное меню */
+.nav-items {
+    display: flex;
+    gap: 40px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.nav-item {
+    color: #b0b0b0;
+    text-decoration: none;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 500;
+    font-size: 30px;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+    
+}
+
+
+/* Иконка пользователя */
+.userlogo {
+    width: 280px;
+    height: 50px;
+    border-radius: 35px;
+    background-color: #9a9a9a;
+    margin: 0 0px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.userlogo:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+
+
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .nav-items {
+        flex-direction: column;
+        gap: 15px;
+        position: static;
+        transform: none;
+    }
+    
+    .nav-item {
+        text-align: center;
+        padding: 10px;
+    }
+    
+    .userlogo {
+        margin: 0 20px;
+    }
+}
+.what {
+    /* Существующие стили */
+    position: absolute;
+    left: 10%;
+    top: 45%;
+    transform: translateY(-50%);
+    margin: 0;
+    color: #f1f1f1;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 800;
+    font-size: 30px;
+    
+    /* Новые стили для ссылки */
+    text-decoration: none;
+    cursor: pointer;
+    z-index: 3; /* Чтобы ссылка была поверх других элементов */
+    padding: 15px 30px; /* Увеличиваем кликабельную область */
+}
+
+/* Ховер-эффект */
+.what:hover {
+    color: #fff;
+    
+}
+
+.LIST {
+    max-width: 1820px;
+    width: 100%;
+    margin: 50px auto;
+    padding: 0 50px;
+    box-sizing: border-box;
+}
+
+/* Заголовок профиля */
+.myprofile {
+    font-size: 60px;
+    font-weight: 800;
+    color: #000000;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+/* Форма профиля */
+.profile-form {
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 40px;
+    border: 3px solid black;
+    
+}
+
+/* Группы полей */
+.input-group {
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.input-group label {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Поля ввода */
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 18px;
+    transition: border-color 0.3s ease;
+}
+
+input:focus,
+select:focus {
+    border-color: #9a9a9a;
+    outline: none;
+}
+
+/* Радио-кнопки */
+.radio-group {
+    display: flex;
+    gap: 30px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+input[type="radio"] {
+    width: 20px;
+    height: 20px;
+}
+
+/* Кнопка сохранения */
+.save-btn {
+    width: 100%;
+    padding: 18px;
+    background-color: #fffe27;
+    color: rgb(0, 0, 0);
+    font-weight: 800;
+    border: none;
+    border-radius: 30px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: 2px solid black;
+}
+
+.save-btn:hover {
+    background-color: #fffe27;
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .LIST {
+        padding: 0 20px;
+    }
+    
+    .profile-form {
+        padding: 25px;
+    }
+    
+    .input-group label {
+        font-size: 18px;
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    select {
+        font-size: 16px;
+        padding: 12px 15px;
+    }
+}

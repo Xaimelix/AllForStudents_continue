@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>НАВИГАЦИОННАЯ ПАНЕЛЬ</title>
+    <!-- Подключаем CSS файл -->
+     <!-- ... остальные метатеги ... -->
+     <link rel="stylesheet" href="../../PROJECT/static/CSS/basepage.css">
+</head>
+    
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            
+            <div class="LOGOT">
+                <a href="#" class="LOGOTIP">AllForStudents</a>
+            </div>
+
+            <div class="user-info" id="userInfo"></div>
+    
+            <div class="nav-items">
+            
+            </div>
+            
+            <div class="nav-items">
+                <a href="#" class="nav-item">Про сайт</a>
+                <a href="#" class="nav-item">Условия проживания</a>
+                <a href="#" class="nav-item">Как забронировать?</a>
+                <a href="#" class="nav-item">Общежития</a> 
+            </div>
+            <a href="../../PROJECT/templates/HTML/aboutuser.html" class="userlogo">
+                <div class="head"></div>
+                <div class="body"></div>
+            </a>
+        </nav>
+    </header>
+    <div class="MAIN-CONTAINER">
+        <div class="square-container">
+            <div class="circle"></div>
+            <div class="seccircle"></div>
+            <div class="thircircle"></div>
+            <div class="fourcircle"></div>
+            <div class="fifthcircle"></div>
+            
+            <div class="title-container">
+                <h1 class="title">Хочешь жить, а не выживать? — ты по адресу!</h1>
+                
+                <div class="about-container">
+                    <div class="btnback"></div>
+                    <h1 class="what">Как это?</h1>
+                    <div class="strelka">
+                        <h1 class="strela">→</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="'STATA">
+            <div class="FIRST">
+                <h1 class="COUNTRATE">Более 2999+ отзывов!</h1>
+            </div>
+            <div class="SECOND">
+                <h1 class="TRUSTUS">Только честные оценки!</h1>
+            </div>
+            <div class="THIRD">
+                <h1 class="QUICK">Быстро и надежно!</h1>
+            </div>
+        </div>
+        </div>
+        <div class="FADE">
+
+        
+        <div class="RATING-box">
+            <h1 class="TEXT">Топ рейтинг общежитий!</h1>
+            <h1 class="shortinfo">Чистота! Качество! Простор! Удобство!...</h1>
+        </div>
+        <div class="image-box">
+            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 1">
+            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 2">
+            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 3">
+        </div>
+
+        <div class="takeit">
+            <div class="btntake"></div>
+            <a href="../templates/HTML/finding.html" class="take-link">
+              <h1 class="take">ЗАБРОНИРОВАТЬ!</h1>
+            </a>
+          </div>
+        </div>
+    </div>
+    
+    
+   
+
+    <main>
+        <!-- Здесь будет основной контент страницы -->
+    </main>
+
+    <script src="../../PROJECT/static/JS/basepage.js"></script>
+
+
+    
+
+
+`   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userInfo = document.getElementById('userInfo');
+        const storedName = localStorage.getItem('userFullName');
+        
+        if(storedName) {
+            userInfo.textContent = storedName;
+            userInfo.style.display = 'block';
+        }
+    });
+    </script>
+</body>
+</html>
