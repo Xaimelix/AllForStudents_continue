@@ -1,53 +1,93 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <style>
+        
+    </style>
+</head>
+<body>
+    <div class="registration-box">
+        <h1>Регистрация</h1>
+        <form id="registrationForm">
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="email" required>
+            </div>
 
-{% block content %}
-<title>Регистрация</title>
-<link rel="shortcut icon" href="static/icon.png" type="image/x-icon">
-<form style="margin-left: 40%; margin-right: 40%; margin-top: 10px;" action="" method="post" novalidate>
-    {{ form.hidden_tag() }}
-    <p class="basic_font">
-        {{ form.email.label }}<br>
-        {{ form.email(class="form-control for_forms", type="email") }}<br>
-        {% for error in form.email.errors %}
-    <div class="alert alert-danger errors" role="alert">
-        {{ error }}
+            <div class="form-group">
+                <label>Пароль:</label>
+                <input type="password" id="password" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label>Повторите пароль:</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+
+            <div class="form-group">
+                <label>Имя:</label>
+                <input type="text" id="name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Фамилия:</label>
+                <input type="text" id="surname" required>
+            </div>
+
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+        <div id="message" class="message"></div>
     </div>
-    {% endfor %}
-    </p>
-    <p class="basic_font">
-        {{ form.password.label }}<br>
-        {{ form.password(class="form-control for_forms", type="password") }}<br>
-        {% for error in form.password.errors %}
-    <div class="alert alert-danger errors" role="alert">
-        {{ error }}
-    </div>
-    {% endfor %}
-    </p>
-    <p class="basic_font">
-        {{ form.repeat_password.label }}<br>
-        {{ form.repeat_password(class="form-control for_forms", type="password") }}<br>
-        {% for error in form.repeat_password.errors %}
-    <div class="alert alert-danger errors" role="alert">
-        {{ error }}
-    </div>
-    {% endfor %}
-    <p class="basic_font">
-        {{ form.name.label }}<br>
-        {{ form.name(class="form-control for_forms") }}<br>
-        {% for error in form.name.errors %}
-    <div class="alert alert-danger errors" role="alert">
-        {{ error }}
-    </div>
-    {% endfor %}
-     <p class="basic_font">
-        {{ form.surname.label }}<br>
-        {{ form.surname(class="form-control for_forms") }}<br>
-        {% for error in form.surname.errors %}
-    <div class="alert alert-danger errors" role="alert">
-        {{ error }}
-    </div>
-    {% endfor %}
-    <p>{{ form.submit(type="submit", class="basic_font") }}</p>
-    <p>{{ message }}</p>
-</form>
-{% endblock %}
+
+    <script>
+        const form = document.getElementById('registrationForm');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Очистка предыдущих сообщений
+            messageDiv.style.display = 'none';
+            
+            // Получение значений
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const name = document.getElementById('name').value;
+            const surname = document.getElementById('surname').value;
+
+            // Валидация
+            if (password !== confirmPassword) {
+                showMessage('Пароли не совпадают!', 'error');
+                return;
+            }
+
+            // Сохранение в localStorage (временное решение)
+            const userData = {
+                email,
+                password, // В реальном приложении пароль НЕЛЬЗЯ так хранить!
+                name,
+                surname,
+                registrationDate: new Date().toISOString()
+            };
+
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            // Очистка формы
+            form.reset();
+            
+            // Показать сообщение об успехе
+            showMessage('Регистрация прошла успешно!', 'success');
+        });
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

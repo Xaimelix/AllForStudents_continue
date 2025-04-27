@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header</title>
+    <link rel="stylesheet" href="../../static/CSS/application.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <div class="LOGOT">
+                <a href="#" class="LOGOTIP">AllForStudents</a>
+            </div>
+            <div class="nav-items">
+                <a href="#" class="nav-item">Форма заявки</a>
+            </div>
+            <div class="userlogo">
+                <div class="head"></div>
+                <a href="../../templates/basepage.html" class="what">Вернуться</a> <!-- Добавляем ссылку -->
+            </div>
+            
+        </nav>
+        
+    </header>
+
+    <div class="LIST">
+        <div class="cont">
+            <h1 class="myprofile">Фильтры</h1>
+            <div class="seccont">
+                <form class="profile-form">
+
+                    <div class="input-group">
+                        <label for="personality">Этаж</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Выберите этаж</option>
+                            <option value="introvert">1</option>
+                            <option value="extrovert">2</option>
+                            <option value="introvert">3</option>
+                            <option value="extrovert">4</option>
+                            <option value="introvert">5</option>
+                            <option value="extrovert">6</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="personality">Максимальное колво студентов</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Выберите</option>
+                            <option value="introvert">1</option>
+                            <option value="extrovert">2</option>
+                            <option value="introvert">3</option>
+                            <option value="extrovert">4</option>
+                            <option value="introvert">5</option>
+                            <option value="extrovert">6</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="personality">Курс</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Выберите</option>
+                            <option value="introvert">1</option>
+                            <option value="extrovert">2</option>
+                            <option value="introvert">3</option>
+                            <option value="extrovert">4</option>
+                            <option value="introvert">5</option>
+                            
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="personality">Пол комнаты</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Выберите</option>
+                            <option value="introvert">М</option>
+                            <option value="introvert">Ж</option>
+                            
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="personality">Сторона комнаты</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Выберите</option>
+                            <option value="introvert">North (Север, иди анг учи)</option>
+                            <option value="introvert">South (Юг, иди анг учи)</option>
+                            
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="personality">Друзья</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Выберите</option>
+                            <option value="introvert">Да</option>
+                            <option value="introvert">Нет</option>
+                            
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="personality">Сосед</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Добрый/Злой</option>
+                            <option value="introvert">Добрый</option>
+                            <option value="introvert">Злой</option>
+                            
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="personality">Умеет ли готовить</label>
+                        <select id="personality" name="personality" required>
+                            <option value="">Выберите</option>
+                            <option value="introvert">Да</option>
+                            <option value="introvert">Нет</option>
+                            
+                        </select>
+                    </div>
+                    
+
+
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+    
+
+    <script>
+        document.querySelector('.profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Сохраняем данные в localStorage
+            const fullName = document.getElementById('fullname').value;
+            localStorage.setItem('userFullName', fullName);
+            
+            // Перенаправляем на главную страницу
+            window.location.href = "../../templates/basepage.html";
+        });
+        </script>
+
+</body>
+
+</html>
