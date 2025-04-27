@@ -1,11 +1,11 @@
 from flask_restful import Resource, reqparse
 from flask import Flask, send_file
-from data.db_session import create_session
+from PROJECT.data.db_session import create_session
 from sqlalchemy import func
-from data.application_request import Application_request
-from data.student import Student
-from data.room import Room
-from data.hostel import Hostel
+from PROJECT.data.application_request import Application_request
+from PROJECT.data.student import Student
+from PROJECT.data.room import Room
+from PROJECT.data.hostel import Hostel
 from datetime import datetime
 
 import matplotlib
@@ -18,42 +18,109 @@ import io
 
 # --- Парсер для ApplicationRequestResource (для методов POST/PUT) ---
 application_request_parser = reqparse.RequestParser()
-application_request_parser.add_argument('status', type=str, required=True, help='Статус заявки обязателен')
-application_request_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)')
-application_request_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)')
-application_request_parser.add_argument('room_id', type=int, required=True, help='ID комнаты обязателен')
-application_request_parser.add_argument('student_id', type=int, required=True, help='ID студента обязателен')
+application_request_parser.add_argument('status', type=str, required=True, help='Статус заявки обязателен', location='form') # <-- Добавлено location='form'
+application_request_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)', location='form') # <-- Добавлено location='form'
+application_request_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)', location='form') # <-- Добавлено location='form'
+application_request_parser.add_argument('room_id', type=int, required=True, help='ID комнаты обязателен', location='form') # <-- Добавлено location='form'
+application_request_parser.add_argument('student_id', type=int, required=True, help='ID студента обязателен', location='form') # <-- Добавлено location='form'
 
+# application_request_parser = reqparse.RequestParser()
+# application_request_parser.add_argument('status', type=str, required=True, help='Статус заявки обязателен')
+# application_request_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)')
+# application_request_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)')
+# application_request_parser.add_argument('room_id', type=int, required=True, help='ID комнаты обязателен')
+# application_request_parser.add_argument('student_id', type=int, required=True, help='ID студента обязателен')
 
-class ApplicationRequestResource(Resource):
+# --- Новый класс для операций над коллекцией заявок ---
+class ApplicationRequestsListResource(Resource):
+    def get(self):
+        """Получение списка всех заявок.
+        ---
+        tags:
+          - Application Requests
+        responses:
+          200:
+            description: Список заявок
+            schema:
+              type: object
+              properties:
+                requests:
+                  type: array
+                  items:
+                    $ref: '#/definitions/ApplicationRequest'
+          500:
+            description: Ошибка при получении списка заявок
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        definitions: # Определение схемы заявки (можно вынести в отдельный файл схем)
+          ApplicationRequest:
+            type: object
+            properties:
+              id:
+                type: integer
+              status:
+                type: string
+              date_entr:
+                type: string
+                format: date
+              date_exit:
+                type: string
+                format: date
+              room_id:
+                type: integer
+              student_id:
+                type: integer
+
+        """
+        db_sess = create_session()
+        try:
+            requests = db_sess.query(Application_request).all()
+            result = []
+            for request in requests:
+                result.append({
+                    'id': request.id,
+                    'status': request.status,
+                    'date_entr': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
+                    'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
+                    'room_id': request.room_id,
+                    'student_id': request.student_id
+                })
+            return {'requests': result}, 200
+        except Exception as e:
+            return {'message': f'Ошибка при получении заявок: {e}'}, 500
+        finally:
+            db_sess.close()
 
     def post(self):
         """Создание новой заявки.
         ---
         tags:
           - Application Requests
-        parameters:
-          - name: status
+        parameters: # <-- Начинаем список параметров
+          - name: status # <-- Первый параметр
             in: formData
             type: string
             required: true
             description: Статус заявки
-          - name: date_entr
+          - name: date_entr # <-- Второй параметр
             in: formData
             type: string
-            required: false
+            required: false # Или true, если дата обязательна
             description: Дата въезда (YYYY-MM-DD)
-          - name: date_exit
+          - name: date_exit # <-- Третий параметр
             in: formData
             type: string
-            required: false
+            required: false # Или true, если дата обязательна
             description: Дата выезда (YYYY-MM-DD)
-          - name: room_id
+          - name: room_id # <-- Четвертый параметр
             in: formData
             type: integer
             required: true
             description: ID комнаты
-          - name: student_id
+          - name: student_id # <-- Пятый параметр
             in: formData
             type: integer
             required: true
@@ -84,6 +151,7 @@ class ApplicationRequestResource(Resource):
                   type: string
         """
         args = application_request_parser.parse_args()
+        print(args)
 
         date_entr = None
         date_exit = None
@@ -94,7 +162,7 @@ class ApplicationRequestResource(Resource):
             if args['date_exit']:
                 date_exit = datetime.strptime(args['date_exit'], '%Y-%m-%d').date()
         except ValueError:
-            return {'message': 'Неверный формат даты. Используйте YYYY-MM-DD.'}, 400
+            return {'message': 'Неверный формат даты. Используйте<ctrl97>-MM-DD.'}, 400
 
         db_sess = create_session()
         try:
@@ -114,8 +182,11 @@ class ApplicationRequestResource(Resource):
         finally:
             db_sess.close()
 
-    def get(self, request_id=None):
-        """Получение списка всех заявок или информации о заявке по ID.
+
+# --- Новый класс для операций над отдельной заявкой по ID ---
+class ApplicationRequestItemResource(Resource):
+    def get(self, request_id):
+        """Получение информации о заявке по ID.
         ---
         tags:
           - Application Requests
@@ -123,91 +194,48 @@ class ApplicationRequestResource(Resource):
           - name: request_id
             in: path
             type: integer
-            required: false # Не обязателен, если получаем список всех заявок
-            description: ID заявки (для получения конкретной заявки)
+            required: true
+            description: ID заявки
         responses:
           200:
-            description: Список заявок или информация о заявке
+            description: Информация о заявке
             schema:
-              type: object
-              properties:
-                requests: # Для списка всех заявок
-                  type: array
-                  items:
-                    $ref: '#/definitions/ApplicationRequest' # Ссылка на определение схемы заявки
-                request: # Для одной заявки
-                  $ref: '#/definitions/ApplicationRequest' # Ссылка на определение схемы заявки
+              $ref: '#/definitions/ApplicationRequest'
           404:
-            description: Заявка не найдена (для запроса по ID)
+            description: Заявка не найдена
             schema:
               type: object
               properties:
                 message:
                   type: string
           500:
-            description: Ошибка при получении заявок
+            description: Ошибка при получении заявки
             schema:
               type: object
               properties:
                 message:
                   type: string
-        definitions: # Определение схемы заявки для Swagger
-          ApplicationRequest:
-            type: object
-            properties:
-              id:
-                type: integer
-              status:
-                type: string
-              date_entr:
-                type: string
-                format: date
-              date_exit:
-                type: string
-                format: date
-              room_id:
-                type: integer
-              student_id:
-                type: integer
-
         """
         db_sess = create_session()
         try:
-            if request_id is None:
-                # Если ID не предоставлен, возвращаем список всех заявок
-                requests = db_sess.query(Application_request).all()
-                result = []
-                for request in requests:
-                    result.append({
-                        'id': request.id,
-                        'status': request.status,
-                        'date_entr': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
-                        'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
-                        'room_id': request.room_id,
-                        'student_id': request.student_id
-                    })
-                return {'requests': result}, 200
-            else:
-                # Если ID предоставлен, возвращаем конкретную заявку
-                request = db_sess.query(Application_request).filter(Application_request.id == request_id).first()
-                if not request:
-                    return {'message': f'Заявка с ID {request_id} не найдена'}, 404
-                
-                result = {
-                    'id': request.id,
-                    'status': request.status,
-                    'date_entr': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
-                    'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
-                    'room_id': request.room_id,
-                    'student_id': request.student_id
-                }
-                return {'request': result}, 200
+            request = db_sess.query(Application_request).filter(Application_request.id == request_id).first()
+            if not request:
+                return {'message': f'Заявка с ID {request_id} не найдена'}, 404
+
+            result = {
+                'id': request.id,
+                'status': request.status,
+                'date_entr': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
+                'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
+                'room_id': request.room_id,
+                'student_id': request.student_id
+            }
+            return {'request': result}, 200
 
         except Exception as e:
-            return {'message': f'Ошибка при получении заявок: {e}'}, 500
+            return {'message': f'Ошибка при получении заявки: {e}'}, 500
         finally:
             db_sess.close()
-
 
     def delete(self, request_id):
         """Удаление заявки по ID.
@@ -243,7 +271,6 @@ class ApplicationRequestResource(Resource):
                 message:
                   type: string
         """
-        # ID берется из аргумента метода, переданного из URL-пути
         db_sess = create_session()
         try:
             request_to_delete = db_sess.query(Application_request).filter(Application_request.id == request_id).first()
@@ -259,22 +286,18 @@ class ApplicationRequestResource(Resource):
         finally:
             db_sess.close()
 
-    # TODO: Добавить метод put(self, request_id) для обновления заявки
-
-
-# --- Парсер для StudentResource (для методов POST/PUT) ---
+# --- Парсер для StudentListResource (для методов POST/PUT) ---
 student_parser = reqparse.RequestParser()
-student_parser.add_argument('login', type=str, required=True, help='Логин студента обязателен')
-student_parser.add_argument('hashed_password', type=str, required=True, help='Хэшированный пароль обязателен')
-student_parser.add_argument('name', type=str, required=True, help='Имя студента обязательно')
-student_parser.add_argument('surname', type=str, required=True, help='Фамилия студента обязательна')
-student_parser.add_argument('room_id', type=int, help='ID комнаты')
-student_parser.add_argument('course', type=int, help='Курс студента')
-student_parser.add_argument('about', type=str, help='О студенте')
-student_parser.add_argument('sex', type=bool, help='Пол студента') # TODO: Возможно, лучше использовать 'true'/'false' строки и преобразовывать
+student_parser.add_argument('login', type=str, required=True, help='Логин студента обязателен', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('hashed_password', type=str, required=True, help='Хэшированный пароль обязателен', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('name', type=str, required=True, help='Имя студента обязательно', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('surname', type=str, required=True, help='Фамилия студента обязательна', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('room_id', type=int, help='ID комнаты', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('course', type=int, help='Курс студента', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('about', type=str, help='О студенте', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('sex', type=bool, help='Пол студента', location='form') # <-- Добавлено location='form'
 
-
-class StudentResource(Resource):
+class StudentListResource(Resource):
     def post(self):
         """Создание нового студента.
         ---
@@ -364,8 +387,72 @@ class StudentResource(Resource):
         finally:
             db_sess.close()
 
-    def get(self, student_id=None):
-        """Получение списка всех студентов или информации о студенте по ID.
+    def get(self):
+        """Получение списка всех студентов.
+        ---
+        tags:
+          - Students
+        responses:
+          200:
+            description: Список студентов
+            schema:
+              type: object
+              properties:
+                requests:
+                  type: array
+                  items:
+                    $ref: '#/definitions/ApplicationRequest'
+          500:
+            description: Ошибка при получении списка студентов
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        definitions: # Определение схемы заявки (можно вынести в отдельный файл схем)
+          Student:
+            type: object
+            properties:
+              id:
+                type: integer
+              login:
+                type: string
+              name:
+                type: string
+                format: date
+              surname:
+                type: string
+                format: date
+              room_id:
+                type: integer
+              course:
+                type: integer
+              sex:
+                type: boolean
+              about:
+                type: string
+        """
+        db_sess = create_session()
+        students = db_sess.query(Student).all()
+        result = []
+        for student in students:
+            result.append({
+                'id': student.id,
+                'login': student.login,
+                'name': student.name,
+                'surname': student.surname,
+                'room_id': student.room_id,
+                'course': student.course,
+                'about': student.about,
+                'sex': student.sex
+            })
+        return {'students': result}, 200
+    
+
+    # TODO: Добавить метод put(self, student_id) для обновления студента
+class StudentItemResource(Resource):
+    def get(self, student_id):
+        """Получение инф студенте по ID.
         ---
         tags:
           - Students
@@ -373,7 +460,7 @@ class StudentResource(Resource):
           - name: student_id
             in: path
             type: integer
-            required: false # Не обязателен, если получаем список всех студентов
+            required: true  # Не обязателен, если получаем список всех студентов
             description: ID студента (для получения конкретного студента)
         responses:
           200:
@@ -428,44 +515,24 @@ class StudentResource(Resource):
 
         """
         db_sess = create_session()
-        try:
-            if student_id is None:
-                # Если ID не предоставлен, возвращаем список всех студентов
-                students = db_sess.query(Student).all()
-                result = []
-                for student in students:
-                    result.append({
-                        'id': student.id,
-                        'login': student.login,
-                        'name': student.name,
-                        'surname': student.surname,
-                        'room_id': student.room_id,
-                        'course': student.course,
-                        'about': student.about,
-                        'sex': student.sex
-                    })
-                return {'students': result}, 200
-            else:
-                # Если ID предоставлен, возвращаем конкретного студента
-                student = db_sess.query(Student).filter(Student.id == student_id).first()
-                if not student:
-                    return {'message': f'Студент с ID {student_id} не найден'}, 404
+            # Если ID предоставлен, возвращаем конкретного студента
+        student = db_sess.query(Student).filter(Student.id == student_id).first()
+        print(student)
+        if not student:
+            return {'message': f'Студент с ID {student_id} не найден'}, 404
 
-                result = {
-                    'id': student.id,
-                    'login': student.login,
-                    'name': student.name,
-                    'surname': student.surname,
-                    'room_id': student.room_id,
-                    'course': student.course,
-                    'about': student.about,
-                    'sex': student.sex
-                }
-                return {'student': result}, 200
-        except Exception as e:
-            return {'message': f'Ошибка при получении студента: {e}'}, 500
-        finally:
-            db_sess.close()
+        result = {
+            'id': student.id,
+            'login': student.login,
+            'name': student.name,
+            'surname': student.surname,
+            'room_id': student.room_id,
+            'course': student.course,
+            'about': student.about,
+            'sex': student.sex
+        }
+        return {'student': result}, 200
+    
 
     def delete(self, student_id):
         """Удаление студента по ID.
@@ -517,27 +584,74 @@ class StudentResource(Resource):
         finally:
             db_sess.close()
 
-    # TODO: Добавить метод put(self, student_id) для обновления студента
-
-
-# --- Парсер для RoomResource (для методов POST/PUT) ---
 room_parser = reqparse.RequestParser()
-room_parser.add_argument('hostel_id', type=int, required=True, help='Номер общежития обязателен')
-room_parser.add_argument('square', type=float, required=True, help='Площадь комнаты обязательна')
-room_parser.add_argument('max_cnt_student', type=int, required=True, help='Максимальное количество студентов в комнате обязательно')
-room_parser.add_argument('cur_cnt_student', type=int, required=True, help='Текущее количество студентов в комнате обязательно')
-room_parser.add_argument('floor', type=int, required=True, help='Этаж комнаты обязателен')
-room_parser.add_argument('sex', type=bool, required=True, help='Пол комнаты (True - мужская, False - женская) обязателен')
-room_parser.add_argument('side', type=str, required=True, help='Сторона комнаты (например, "s - south", "n - north") обязательна')
+# !!! ДОБАВЛЕНО location='form' КО ВСЕМ АРГУМЕНТАМ ПАРСЕРА КОМНАТ !!!
+room_parser.add_argument('hostel_id', type=int, required=True, help='Номер общежития обязателен', location='form')
+room_parser.add_argument('square', type=float, required=True, help='Площадь комнаты обязательна', location='form')
+room_parser.add_argument('max_cnt_student', type=int, required=True, help='Максимальное количество студентов в комнате обязательно', location='form')
+room_parser.add_argument('cur_cnt_student', type=int, required=True, help='Текущее количество студентов в комнате обязательно', location='form')
+room_parser.add_argument('floor', type=int, required=True, help='Этаж комнаты обязателен', location='form')
+room_parser.add_argument('sex', type=bool, required=True, help='Пол комнаты (True - мужская, False - женская) обязателен', location='form')
+room_parser.add_argument('side', type=str, required=True, help='Сторона комнаты (например, "s - south", "n - north") обязательна', location='form')
 
 
-class RoomResource(Resource):
+# --- Новый класс для операций над коллекцией комнат ---
+class RoomListResource(Resource):
+    def get(self):
+        """Получение списка всех комнат.
+        ---
+        tags:
+            - Rooms
+        responses:
+          200:
+            description: Список комнат
+            schema:
+              type: object
+              properties:
+                rooms: # Для списка всех комнат
+                  type: array
+                  items:
+                    $ref: '#/definitions/Room' # Ссылка на определение схемы комнаты
+          500:
+            description: Ошибка при получении комнат
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        # Определения схем лучше делать один раз в конце файла
+        # definitions:
+        #   Room:
+        #     ...
+        """
+        db_sess = create_session()
+        try:
+            rooms = db_sess.query(Room).all()
+            result = []
+            for room in rooms:
+                 result.append({
+                    'id': room.id,
+                    'hostel_id': room.hostel_id,
+                    'square': room.square,
+                    'max_cnt_student': room.max_cnt_student,
+                    'cur_cnt_student': room.cur_cnt_student,
+                    'floor': room.floor,
+                    'sex': room.sex,
+                    'side': room.side
+                })
+            return {'rooms': result}, 200
+        except Exception as e:
+            return {'message': f'Ошибка при получении комнат: {e}'}, 500
+        finally:
+            db_sess.close()
+
+
     def post(self):
         """Создание новой комнаты.
         ---
         tags:
           - Rooms
-        parameters:
+        parameters: # <-- Параметры формы для создания комнаты
           - name: hostel_id
             in: formData
             type: integer
@@ -590,6 +704,10 @@ class RoomResource(Resource):
               properties:
                 message:
                   type: string
+        # Определения схем лучше делать один раз в конце файла
+        # definitions:
+        #   Room:
+        #     ...
         """
         args = room_parser.parse_args() # Используем room_parser
         db_sess = create_session()
@@ -612,8 +730,10 @@ class RoomResource(Resource):
         finally:
             db_sess.close()
 
-    def get(self, room_id=None):
-        """Получение списка всех комнат или информации о комнате по ID.
+# --- Новый класс для операций над отдельной комнатой по ID ---
+class RoomItemResource(Resource):
+    def get(self, room_id):
+        """Получение информации о комнате по ID.
         ---
         tags:
             - Rooms
@@ -621,90 +741,49 @@ class RoomResource(Resource):
           - name: room_id
             in: path
             type: integer
-            required: false # Не обязателен, если получаем список всех комнат
-            description: ID комнаты (для получения конкретной комнаты)
+            required: true
+            description: ID комнаты
         responses:
           200:
-            description: Список комнат или информация о комнате
+            description: Информация о комнате
             schema:
-              type: object
-              properties:
-                rooms: # Для списка всех комнат
-                  type: array
-                  items:
-                    $ref: '#/definitions/Room' # Ссылка на определение схемы комнаты
-                room: # Для одной комнаты
-                   $ref: '#/definitions/Room' # Ссылка на определение схемы комнаты
+               $ref: '#/definitions/Room' # Ссылка на определение схемы комнаты
           404:
-            description: Комната не найдена (для запроса по ID)
+            description: Комната не найдена
             schema:
               type: object
               properties:
                 message:
                   type: string
           500:
-            description: Ошибка при получении комнат
+            description: Ошибка при получении комнаты
             schema:
               type: object
               properties:
                 message:
                   type: string
-        definitions: # Определение схемы комнаты для Swagger
-          Room:
-            type: object
-            properties:
-              id:
-                type: integer
-              hostel_id:
-                type: integer
-              square:
-                type: number
-              max_cnt_student:
-                type: integer
-              cur_cnt_student:
-                type: integer
-              floor:
-                type: integer
-              sex:
-                type: boolean
-              side:
-                type: string
+        # Определения схем лучше делать один раз в конце файла
+        # definitions:
+        #   Room:
+        #     ...
         """
         db_sess = create_session()
         try:
-            if room_id is None:
-                # Если ID не предоставлен, возвращаем список всех комнат
-                rooms = db_sess.query(Room).all()
-                result = []
-                for room in rooms:
-                     result.append({
-                        'id': room.id,
-                        'hostel_id': room.hostel_id,
-                        'square': room.square,
-                        'max_cnt_student': room.max_cnt_student,
-                        'cur_cnt_student': room.cur_cnt_student,
-                        'floor': room.floor,
-                        'sex': room.sex,
-                        'side': room.side
-                    })
-                return {'rooms': result}, 200
-            else:
-                # Если ID предоставлен, возвращаем конкретную комнату
-                room = db_sess.query(Room).filter(Room.id == room_id).first()
-                if not room:
-                    return {'message': f'Комната с ID {room_id} не найдена'}, 404
+            room = db_sess.query(Room).filter(Room.id == room_id).first()
+            if not room:
+                return {'message': f'Комната с ID {room_id} не найдена'}, 404
 
-                result = {
-                    'id': room.id,
-                    'hostel_id': room.hostel_id,
-                    'square': room.square,
-                    'max_cnt_student': room.max_cnt_student,
-                    'cur_cnt_student': room.cur_cnt_student,
-                    'floor': room.floor,
-                    'sex': room.sex,
-                    'side': room.side
-                }
-                return {'room': result}, 200
+            result = {
+                'id': room.id,
+                'hostel_id': room.hostel_id,
+                'square': room.square,
+                'max_cnt_student': room.max_cnt_student,
+                'cur_cnt_student': room.cur_cnt_student,
+                'floor': room.floor,
+                'sex': room.sex,
+                'side': room.side
+            }
+            return {'room': result}, 200
         except Exception as e:
             return {'message': f'Ошибка при получении комнаты: {e}'}, 500
         finally:
@@ -761,30 +840,26 @@ class RoomResource(Resource):
         finally:
             db_sess.close()
 
-    # TODO: Добавить метод put(self, room_id) для обновления комнаты
 
+    # TODO: Добавить метод put(self, room_id) для обновления комнаты
 
 # --- Парсер для HostelResource (для методов POST/PUT) ---
 hostel_parser = reqparse.RequestParser()
-hostel_parser.add_argument('address', type=str, required=True, help='Адрес общежития обязателен')
-hostel_parser.add_argument('district', type=str, required=True, help='Район общежития обязателен')
+# !!! ДОБАВЛЕНО location='form' КО ВСЕМ АРГУМЕНТАМ ПАРСЕРА ОБЩЕЖИТИЙ !!!
+hostel_parser.add_argument('address', type=str, required=True, help='Адрес общежития обязателен', location='form')
+hostel_parser.add_argument('district', type=str, required=True, help='Район общежития обязателен', location='form')
 
 
-class HostelResource(Resource):
-    def get(self, hostel_id=None):
-        """Получение списка всех общежитий или информации о общежитии по ID.
+# --- Новый класс для операций над коллекцией общежитий ---
+class HostelListResource(Resource):
+    def get(self):
+        """Получение списка всех общежитий.
         ---
         tags:
             - Hostels
-        parameters:
-          - name: hostel_id
-            in: path
-            type: integer
-            required: false # Не обязателен, если получаем список всех общежитий
-            description: ID общежития (для получения конкретного общежития)
         responses:
           200:
-            description: Список общежитий или информация о общежитии
+            description: Список общежитий
             schema:
               type: object
               properties:
@@ -792,15 +867,6 @@ class HostelResource(Resource):
                   type: array
                   items:
                     $ref: '#/definitions/Hostel' # Ссылка на определение схемы общежития
-                hostel: # Для одного общежития
-                  $ref: '#/definitions/Hostel' # Ссылка на определение схемы общежития
-          404:
-            description: Общежитие не найдено (для запроса по ID)
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
           500:
             description: Ошибка при получении общежитий
             schema:
@@ -808,42 +874,22 @@ class HostelResource(Resource):
               properties:
                 message:
                   type: string
-        definitions: # Определение схемы общежития для Swagger
-          Hostel:
-            type: object
-            properties:
-              id:
-                type: integer
-              address:
-                type: string
-              district:
-                type: string
+        # Определения схем лучше делать один раз в конце файла
+        # definitions:
+        #   Hostel:
+        #     ...
         """
         db_sess = create_session()
         try:
-            if hostel_id is None:
-                # Если ID не предоставлен, возвращаем список всех общежитий
-                hostels = db_sess.query(Hostel).all()
-                result = []
-                for hostel in hostels:
-                    result.append({
-                        'id': hostel.id,
-                        'address': hostel.address,
-                        'district': hostel.district
-                    })
-                return {'hostels': result}, 200
-            else:
-                # Если ID предоставлен, возвращаем конкретное общежитие
-                hostel = db_sess.query(Hostel).filter(Hostel.id == hostel_id).first()
-                if not hostel:
-                    return {'message': f'Общежитие с ID {hostel_id} не найдено'}, 404
-
-                result = {
+            hostels = db_sess.query(Hostel).all()
+            result = []
+            for hostel in hostels:
+                result.append({
                     'id': hostel.id,
                     'address': hostel.address,
                     'district': hostel.district
-                }
-                return {'hostel': result}, 200
+                })
+            return {'hostels': result}, 200
         except Exception as e:
             return {'message': f'Ошибка при получении общежитий: {e}'}, 500
         finally:
@@ -855,7 +901,7 @@ class HostelResource(Resource):
         ---
         tags:
             - Hostels
-        parameters:
+        parameters: # <-- Параметры формы для создания общежития
           - name: address
             in: formData
             type: string
@@ -883,6 +929,10 @@ class HostelResource(Resource):
               properties:
                 message:
                   type: string
+        # Определения схем лучше делать один раз в конце файла
+        # definitions:
+        #   Hostel:
+        #     ...
         """
         args = hostel_parser.parse_args()
         db_sess = create_session()
@@ -899,6 +949,61 @@ class HostelResource(Resource):
             return {'message': f'Ошибка при создании общежития: {e}'}, 500
         finally:
             db_sess.close()
+
+# --- Новый класс для операций над отдельным общежитием по ID ---
+class HostelItemResource(Resource):
+    def get(self, hostel_id):
+        """Получение информации о общежитии по ID.
+        ---
+        tags:
+            - Hostels
+        parameters:
+          - name: hostel_id
+            in: path
+            type: integer
+            required: true
+            description: ID общежития
+        responses:
+          200:
+            description: Информация о общежитии
+            schema:
+              $ref: '#/definitions/Hostel' # Ссылка на определение схемы общежития
+          404:
+            description: Общежитие не найдено
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при получении общежитий
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        # Определения схем лучше делать один раз в конце файла
+        # definitions:
+        #   Hostel:
+        #     ...
+        """
+        db_sess = create_session()
+        try:
+            hostel = db_sess.query(Hostel).filter(Hostel.id == hostel_id).first()
+            if not hostel:
+                return {'message': f'Общежитие с ID {hostel_id} не найдено'}, 404
+
+            result = {
+                'id': hostel.id,
+                'address': hostel.address,
+                'district': hostel.district
+            }
+            return {'hostel': result}, 200
+        except Exception as e:
+            return {'message': f'Ошибка при получении общежитий: {e}'}, 500
+        finally:
+            db_sess.close()
+
 
     def delete(self, hostel_id):
         """Удаление общежития по ID.
@@ -950,7 +1055,6 @@ class HostelResource(Resource):
         finally:
             db_sess.close()
 
-    # TODO: Добавить метод put(self, hostel_id) для обновления общежития
 
 
 

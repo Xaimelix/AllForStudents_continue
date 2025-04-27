@@ -132,24 +132,6 @@
             margin-right: 10px;
             font-size: 1.2em;
         }
-        select {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center/15px;
-    background-color: white;
-}
-
-select:focus {
-    outline: none;
-    border-color: #000000;
-}
     
         @media (max-width: 480px) {
             .registration-box {
@@ -175,44 +157,62 @@ select:focus {
 <body>
     <div class="registration-box">
         <h1>Регистрация</h1>
-        <form id="registrationForm">
+
+        <form method="post" action="" novalidate>
+            {{ form.hidden_tag() }}
             <div class="form-group">
                 <label>Email:</label>
-                <input type="email" id="email" required>
+                {{ form.email(class="form-control for_forms", type="email") }}
+                {% for error in form.email.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Пароль:</label>
-                <input type="password" id="password" required minlength="6">
+                {{ form.password(class="form-control for_forms", type="password") }}
+                {% for error in form.password.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Повторите пароль:</label>
-                <input type="password" id="confirmPassword" required>
+                {{ form.repeat_password(class="form-control for_forms", type="password") }}
+                {% for error in form.repeat_password.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Имя:</label>
-                <input type="text" id="name" required>
+                {{ form.name(class="form-control for_forms") }}
+                {% for error in form.name.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Фамилия:</label>
-                <input type="text" id="surname" required>
+                {{ form.surname(class="form-control for_forms") }}
+                {% for error in form.surname.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
-            <div class="form-group">
-                <label>Пол:</label>
-                <select id="gender" name="gender" required>
-                    <option value="">Выберите пол</option>
-                    <option value="M">М</option>
-                    <option value="F">Ж</option>
-                </select>
-            </div>
-            
 
-            <button type="submit">Зарегистрироваться</button>
+            <p>{{ form.submit(type="submit", class="basic_font") }}</p>
         </form>
-        <div id="message" class="message"></div>
+        <div id="message" class="message"><p>{{ message }}</p></div>
     </div>
 
     <script>

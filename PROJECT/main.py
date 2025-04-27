@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask, redirect, render_template, jsonify, request
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from data import db_session
@@ -11,10 +9,12 @@ from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from api.resources import Application_request, RoomResource, StudentResource, HostelResource, ReportResource
-from api.routes import initialize_routes
+from PROJECT.api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, \
+    StudentListResource, HostelItemResource, HostelListResource, ReportResource
+from PROJECT.api.routes import initialize_routes
 from flask_restful import Api
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
@@ -65,6 +65,8 @@ initialize_routes(api)
 # Лучше использовать более строгие настройки CORS в продакшене.
 # Строка ниже решает проблему "TypeError: NetworkError when attempting to fetch resource." в Swagger UI.
 CORS(app)
+
+
 # Если тебе нужно ограничить разрешенные источники, можно сделать так:
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
@@ -75,6 +77,7 @@ def init_db():
     print(f"Initializing database at: {db_path}")
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     db_session.global_init(db_path)
+
 
 def main():
     init_db()
@@ -89,26 +92,24 @@ def load_user(user_id):
 
 @app.route('/')
 def main_page():
-    if not current_user.is_authenticated:
-        return render_template("HTML/nolog.html")
+    return render_template("basepage.html")
+
 
 @app.route('/test')
 def second_page():
-    return "Hello, world!"
     return f"{current_user.name, current_user.surname}"
-
 
 
 @app.route('/me')
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return render_template("HTML/nolog.html")
+    return render_template('aboutuser.html', item=current_user)
 
 
-@app.route('/hostel/<id>')
-def hostel(id):
-    return f'Hostel: {id}'
+@app.route('/hostels')
+def hostel():
+    return render_template('finding.html')
 
 
 @app.route('/room/<id>')
@@ -153,7 +154,7 @@ def login():
         if student and student.check_password(form.password.data):
             login_user(student, remember=form.remember_me.data)
             db_sess.close()
-            return redirect("/")
+            return redirect("/applications")
         db_sess.close()
         return render_template('login.html', form=form, message='Неверно введён логин или пароль')
     return render_template('login.html', form=form)
@@ -165,14 +166,12 @@ def logout():
     return redirect('/')
 
 
-@app.route('/settings')
-def settings():
-    return 'settings'
-
-
 @app.route('/applications')
 def admin():
-    return render_template('HTML/application.html')
+    if current_user.admin != 1:
+        return redirect('/')
+    return render_template('base.html')
+
 
 @app.route('/add', methods=['GET'])
 def add():
