@@ -9,8 +9,8 @@ from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from PROJECT.api.resources import Application_request, RoomResource, StudentResource, HostelResource, ReportResource
-from PROJECT.api.routes import initialize_routes
+from api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource
+from api.routes import initialize_routes
 from flask_restful import Api
 from flask_cors import CORS
 
@@ -63,15 +63,13 @@ initialize_routes(api)
 # Лучше использовать более строгие настройки CORS в продакшене.
 # Строка ниже решает проблему "TypeError: NetworkError when attempting to fetch resource." в Swagger UI.
 CORS(app)
-
-
 # Если тебе нужно ограничить разрешенные источники, можно сделать так:
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
 
 def main():
     db_session.global_init("db/database.db")
-    app.run(port=8000)
+    app.run()
 
 
 @login_manager.user_loader
