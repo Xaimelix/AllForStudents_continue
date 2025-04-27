@@ -28,7 +28,7 @@ swagger = Swagger(app, template={
         "description": "Документация для всех доступных API",
         "version": "1.0"
     },
-    "host": "localhost:5000",
+    "host": "prod-team-18-lkt02gu5.hack.prodcontest.ru",
     "basePath": "/",
     "schemes": [
         "http"
@@ -78,7 +78,7 @@ def init_db():
 
 def main():
     init_db()
-    app.run(port=80)
+    app.run(host="0.0.0.0", port=80)
 
 
 @login_manager.user_loader
