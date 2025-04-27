@@ -1217,10 +1217,10 @@ class ReportResource(Resource):
                 plt.title(f"Заполненность общежития: {hostel['address']}") # Заголовок диаграммы
 
                 if hostel['id'] in popular_rooms_by_hostel:
-                    pdf.cell(0, 10, txt="Самые занятые комнаты:", ln=True, align='L')
+                    pdf.cell(0, 10, txt="Самые популярные комнаты:", ln=True, align='L')
                     for room in popular_rooms_by_hostel[hostel['id']]['rooms']:
                         # Здесь можно добавить текст для каждой комнаты, например:
-                        pdf.cell(0, 10, txt=f"Комната ID {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
+                        pdf.cell(0, 10, txt=f"Комната {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
                         pdf.ln(5) # Небольшой отступ после информации о комнатах
 
 
