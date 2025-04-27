@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, redirect, render_template, jsonify, request
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from data import db_session
@@ -26,7 +28,7 @@ swagger = Swagger(app, template={
         "description": "Документация для всех доступных API",
         "version": "1.0"
     },
-    "host": "localhost:5000",
+    "host": "prod-team-18-lkt02gu5.hack.prodcontest.ru",
     "basePath": "/",
     "schemes": [
         "http"
@@ -67,9 +69,16 @@ CORS(app)
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
 
+def init_db():
+    # Используйте относительный путь от корня проекта
+    db_path = os.path.join(os.path.dirname(__file__), "db/database.db")
+    print(f"Initializing database at: {db_path}")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    db_session.global_init(db_path)
+
 def main():
-    db_session.global_init("db/database.db")
-    app.run(port=80)
+    init_db()
+    app.run(host="0.0.0.0", port=80)
 
 
 @login_manager.user_loader
@@ -81,7 +90,7 @@ def load_user(user_id):
 @app.route('/')
 def main_page():
     if not current_user.is_authenticated:
-        return render_template("matthew1.html")
+        return render_template("HTML/nolog.html")
 
 @app.route('/test')
 def second_page():
@@ -89,11 +98,12 @@ def second_page():
     return f"{current_user.name, current_user.surname}"
 
 
+
 @app.route('/me')
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return f'thats my page'
+    return render_template("HTML/nolog.html")
 
 
 @app.route('/hostel/<id>')
@@ -162,7 +172,7 @@ def settings():
 
 @app.route('/applications')
 def admin():
-    return 'applications'
+    return render_template('HTML/application.html')
 
 @app.route('/add', methods=['GET'])
 def add():
