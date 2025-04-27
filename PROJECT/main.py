@@ -78,7 +78,7 @@ def init_db():
 
 def main():
     init_db()
-    app.run(host='0.0.0.0', port=80)
+    app.run(host="0.0.0.0", port=80)
 
 
 @login_manager.user_loader
