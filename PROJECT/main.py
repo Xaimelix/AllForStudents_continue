@@ -81,7 +81,7 @@ def load_user(user_id):
 @app.route('/')
 def main_page():
     if not current_user.is_authenticated:
-        return render_template("matthew1.html")
+        return render_template("HTML/nolog.html")
 
 @app.route('/test')
 def second_page():
@@ -89,11 +89,12 @@ def second_page():
     return f"{current_user.name, current_user.surname}"
 
 
+
 @app.route('/me')
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return f'thats my page'
+    return render_template("HTML/nolog.html")
 
 
 @app.route('/hostel/<id>')
@@ -162,7 +163,7 @@ def settings():
 
 @app.route('/applications')
 def admin():
-    return 'applications'
+    return render_template('HTML/application.html')
 
 @app.route('/add', methods=['GET'])
 def add():
