@@ -9,10 +9,12 @@ from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource
-from api.routes import initialize_routes
+from PROJECT.api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, \
+    StudentListResource, HostelItemResource, HostelListResource, ReportResource
+from PROJECT.api.routes import initialize_routes
 from flask_restful import Api
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
@@ -76,6 +78,7 @@ def init_db():
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     db_session.global_init(db_path)
 
+
 def main():
     init_db()
     app.run(host="0.0.0.0", port=80)
@@ -104,9 +107,9 @@ def myself():
     return render_template('aboutuser.html', item=current_user)
 
 
-@app.route('/hostel/<id>')
-def hostel(id):
-    return f'Hostel: {id}'
+@app.route('/hostels')
+def hostel():
+    return render_template('finding.html')
 
 
 @app.route('/room/<id>')
