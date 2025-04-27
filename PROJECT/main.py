@@ -27,7 +27,7 @@ swagger = Swagger(app, template={
         "description": "Документация для всех доступных API",
         "version": "1.0"
     },
-    "host": "localhost:5000",
+    "host": "prod-team-18-lkt02gu5.hack.prodcontest.ru",
     "basePath": "/",
     "schemes": [
         "http"
@@ -68,9 +68,17 @@ CORS(app)
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
 
+def init_db():
+    # Используйте относительный путь от корня проекта
+    db_path = os.path.join(os.path.dirname(__file__), "db/database.db")
+    print(f"Initializing database at: {db_path}")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    db_session.global_init(db_path)
+
+
 def main():
-    db_session.global_init("db/database.db")
-    app.run()
+    init_db()
+    app.run(host="0.0.0.0", port=80)
 
 
 @login_manager.user_loader
@@ -97,9 +105,9 @@ def myself():
     return f'thats my page'
 
 
-@app.route('/hostel/<id>')
-def hostel(id):
-    return f'Hostel: {id}'
+@app.route('/hostels')
+def hostel():
+    return render_template('finding.html')
 
 
 @app.route('/room/<id>')

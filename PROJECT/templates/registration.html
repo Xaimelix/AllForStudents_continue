@@ -3,43 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Регистрация</title>
     <style>
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fffe27 0%, #da9958 100%);
+            padding: 20px;
+        }
+    
+        .registration-box {
+            background: white;
+            border: 2px solid black;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 500px;
+            transition: transform 0.3s ease;
+        }
+    
+        .registration-box:hover {
+            transform: translateY(-5px);
+        }
+    
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            position: relative;
+        }
+    
+        h1::after {
+            content: '';
+            display: block;
+            width: 180px;
+            height: 3px;
+            background: #000000;
+            margin: 10px auto 0;
+        }
+    
+        .form-group {
+            margin-bottom: 25px;
+        }
+    
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+    
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+    
+        input:focus {
+            outline: none;
+            border-color: #000000;
+            
+        }
+    
+        button {
+            width: 100%;
+            padding: 15px;
+            
+            background: #fffe27;
+            color: rgb(0, 0, 0);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid black;
+        }
+    
+        button:hover {
+            background: #fffe27;
+            box-shadow: 0 5px 15px #cfcfcf ;
+            border: 2px solid black;
+        }
+    
+        button:active {
+            transform: scale(0.98);
+        }
+    
+        .message {
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            display: none;
+            font-size: 0.95em;
+            align-items: center;
+        }
+    
+        .message.success {
+            background: #48bb78;
+            color: white;
+        }
+    
+        .message.error {
+            background: #f56565;
+            color: white;
+        }
+    
+        .message::before {
+            content: '⚠';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+    
+        @media (max-width: 480px) {
+            .registration-box {
+                padding: 25px;
+            }
+    
+            h1 {
+                font-size: 1.8em;
+            }
+    
+            input {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+    
+            button {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="registration-box">
         <h1>Регистрация</h1>
-        <form id="registrationForm">
+
+        <form method="post" action="" novalidate>
+            {{ form.hidden_tag() }}
             <div class="form-group">
                 <label>Email:</label>
-                <input type="email" id="email" required>
+                {{ form.email(class="form-control for_forms", type="email") }}
+                {% for error in form.email.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Пароль:</label>
-                <input type="password" id="password" required minlength="6">
+                {{ form.password(class="form-control for_forms", type="password") }}
+                {% for error in form.password.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Повторите пароль:</label>
-                <input type="password" id="confirmPassword" required>
+                {{ form.repeat_password(class="form-control for_forms", type="password") }}
+                {% for error in form.repeat_password.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Имя:</label>
-                <input type="text" id="name" required>
+                {{ form.name(class="form-control for_forms") }}
+                {% for error in form.name.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label>Фамилия:</label>
-                <input type="text" id="surname" required>
+                {{ form.surname(class="form-control for_forms") }}
+                {% for error in form.surname.errors %}
+                <div class="alert alert-danger errors" role="alert">
+                    {{ error }}
+                </div>
+                {% endfor %}
             </div>
 
-            <button type="submit">Зарегистрироваться</button>
+            <p>{{ form.submit(type="submit", class="basic_font") }}</p>
         </form>
-        <div id="message" class="message"></div>
+        <div id="message" class="message"><p>{{ message }}</p></div>
     </div>
 
     <script>
@@ -89,5 +262,11 @@
             messageDiv.style.display = 'block';
         }
     </script>
+    <script src="../../PROJECT/static/JS/registration.js"></script>
+
+    
+
+
+
 </body>
 </html>
