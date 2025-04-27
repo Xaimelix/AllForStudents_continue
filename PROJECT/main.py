@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask, redirect, render_template, jsonify, request
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from data import db_session
@@ -89,8 +87,8 @@ def load_user(user_id):
 
 @app.route('/')
 def main_page():
-    if not current_user.is_authenticated:
-        return render_template("HTML/nolog.html")
+    return render_template("basepage.html")
+
 
 @app.route('/test')
 def second_page():
@@ -103,7 +101,7 @@ def second_page():
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return render_template("HTML/nolog.html")
+    return render_template('aboutuser.html', item=current_user)
 
 
 @app.route('/hostel/<id>')
@@ -153,7 +151,7 @@ def login():
         if student and student.check_password(form.password.data):
             login_user(student, remember=form.remember_me.data)
             db_sess.close()
-            return redirect("/")
+            return redirect("/applications")
         db_sess.close()
         return render_template('login.html', form=form, message='Неверно введён логин или пароль')
     return render_template('login.html', form=form)
@@ -165,14 +163,12 @@ def logout():
     return redirect('/')
 
 
-@app.route('/settings')
-def settings():
-    return 'settings'
-
-
 @app.route('/applications')
 def admin():
-    return render_template('HTML/application.html')
+    if current_user.admin != 1:
+        return redirect('/')
+    return render_template('base.html')
+
 
 @app.route('/add', methods=['GET'])
 def add():

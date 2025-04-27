@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Header</title>
-    <link rel="stylesheet" href="../../static/CSS/aboutuser.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='CSS/aboutuser.css') }}">
 </head>
 <body>
     <header class="header">
@@ -17,7 +17,7 @@
             </div>
             <div class="userlogo">
                 <div class="head"></div>
-                <a href="../../templates/basepage.html" class="what">Вернуться</a> <!-- Добавляем ссылку -->
+                <a href="/" class="what">Вернуться</a> <!-- Добавляем ссылку -->
             </div>
             
         </nav>
@@ -31,18 +31,18 @@
                 <form class="profile-form">
                     <div class="input-group">
                         <label for="fullname">ФИО</label>
-                        <input type="text" id="fullname" name="fullname" required>
+                        <input type="text" id="fullname" name="fullname" value="{{item.name}} {{item.surname}}" required>
                     </div>
 
                     <div class="input-group">
                         <label>Пол</label>
                         <div class="radio-group">
                             <label>
-                                <input type="radio" name="gender" value="male" required>
+                                <input type="radio" name="gender" value="male" {% if item.sex == 1 %} checked {% endif %}>
                                 Мужской
                             </label>
                             <label>
-                                <input type="radio" name="gender" value="female">
+                                <input type="radio" name="gender" value="female" {% if item.sex == 0 %} checked {% endif %}>
                                 Женский
                             </label>
                         </div>
