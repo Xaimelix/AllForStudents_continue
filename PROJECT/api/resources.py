@@ -1,11 +1,11 @@
 from flask_restful import Resource, reqparse
 from flask import Flask, send_file
-from data.db_session import create_session
+from PROJECT.data.db_session import create_session
 from sqlalchemy import func
-from data.application_request import Application_request
-from data.student import Student
-from data.room import Room
-from data.hostel import Hostel
+from PROJECT.data.application_request import Application_request
+from PROJECT.data.student import Student
+from PROJECT.data.room import Room
+from PROJECT.data.hostel import Hostel
 from datetime import datetime
 
 import matplotlib
