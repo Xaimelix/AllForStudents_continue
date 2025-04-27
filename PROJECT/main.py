@@ -94,7 +94,7 @@ def second_page():
 def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
-    return render_template('aboutuser.html')
+    return render_template('aboutuser.html', item=current_user)
 
 
 @app.route('/hostel/<id>')
@@ -113,7 +113,6 @@ def registration():
         return redirect('/')
     form = RegistrationForm()
     if form.validate_on_submit():
-        print(123)
         if form.password.data != form.repeat_password.data:
             return render_template('registration.html', form=form, message='Пароли не совпадают')
         db_sess = db_session.create_session()
@@ -157,16 +156,11 @@ def logout():
     return redirect('/')
 
 
-@app.route('/settings')
-def settings():
-    return 'settings'
-
-
 @app.route('/applications')
 def admin():
     if current_user.admin != 1:
         return redirect('/')
-    return render_template('application.html')
+    return render_template('base.html')
 
 
 @app.route('/add', methods=['GET'])
