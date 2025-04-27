@@ -30,7 +30,7 @@ swagger = Swagger(app, template={
         "description": "Документация для всех доступных API",
         "version": "1.0"
     },
-    "host": "prod-team-18-lkt02gu5.hack.prodcontest.ru"
+    "host": "prod-team-18-lkt02gu5.hack.prodcontest.ru",
     "basePath": "/",
     "schemes": [
         "http"
