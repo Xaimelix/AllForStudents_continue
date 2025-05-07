@@ -145,7 +145,7 @@ class ApplicationRequestsListResource(Resource):
                   type: string
         """
         args = application_request_parser.parse_args()
-        print(args)
+        # print(args)
 
         date_entr = None
         date_exit = None
@@ -601,7 +601,6 @@ class StudentItemResource(Resource):
         db_sess = create_session()
             # Если ID предоставлен, возвращаем конкретного студента
         student = db_sess.query(Student).filter(Student.id == student_id).first()
-        print(student)
         if not student:
             return {'message': f'Студент с ID {student_id} не найден'}, 404
 
@@ -1205,7 +1204,7 @@ class ReportResource(Resource):
                 func.sum(Room.max_cnt_student).label('total_capacity'), # Общая максимальная вместимость
                 func.sum(Room.cur_cnt_student).label('total_occupied') # Общее текущее количество студентов
             ).join(Room).group_by(Hostel.id, Hostel.address).all()
-            print(hostel_summary_data)
+            # print(hostel_summary_data)
 
             # Результат будет списком кортежей или объектов, например:
             # [(hostel_id, address, total_rooms, total_capacity, total_occupied), ...]
@@ -1275,7 +1274,6 @@ class ReportResource(Resource):
             #     pdf.cell(0, 10, txt="Самые занятые комнаты:", ln=True, align='L')
             #     for room in popular_rooms_by_hostel[hostel['id']]['rooms']:
             #         # Здесь можно добавить текст для каждой комнаты, например:
-            #         print(room)
             #         pdf.cell(0, 10, txt=f"Комната ID {room['room_id']}: {room['cur_cnt_student']} студентов", ln=True, align='L')
             #         pdf.ln(5) # Небольшой отступ после информации о комнатах
 

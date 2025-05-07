@@ -112,11 +112,12 @@
 
     <script>
     // URL твоего API эндпоинта для получения всех заявок
-    const apiUrl = 'http://localhost:5000/api/application_requests'; // <-- Укажи правильный URL, если он отличается
-
+    const serverBaseUrl = "{{ server_url }}"; 
+    const apiUrl = `${serverBaseUrl}api/application_requests`; // URL для получения всех заявок
+    
     // URL твоего API эндпоинта для обновления статуса заявки (PUT запрос по ID)
     // Он должен соответствовать маршруту ApplicationRequestItemResource: /api/application_requests/<int:request_id>
-    const updateStatusApiUrl = 'http://localhost:5000/api/application_requests/'; // Базовый URL, к которому добавим ID заявки
+    const updateStatusApiUrl = `${serverBaseUrl}api/application_requests/`; // Базовый URL, к которому добавим ID заявки
 
 
     // Функция для получения и отображения заявок со статусом 0

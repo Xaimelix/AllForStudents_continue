@@ -24,36 +24,36 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 swagger = Swagger(app, template={
-    "swagger": "2.0",
-    "info": {
-        "title": "API документация",
-        "description": "Документация для всех доступных API",
-        "version": "1.0"
-    },
-    "host": "prod-team-18-lkt02gu5.hack.prodcontest.ru",
-    "basePath": "/",
-    "schemes": [
-        "http"
-    ],
-    "tags": [
-        {
-            "name": "Application Requests",
-            "description": "Операции с заявками"
+        "swagger": "2.0",
+        "info": {
+            "title": "API документация",
+            "description": "Документация для всех доступных API",
+            "version": "1.0"
         },
-        {
-            "name": "Students",
-            "description": "Операции со студентами"
-        },
-        {
-            "name": "Rooms",
-            "description": "Операции с комнатами"
-        },
-        {
-            "name": "Hostels",
-            "description": "Операции с общежитиями"
-        }
-    ]
-})
+        # "host": f"",
+        "basePath": "/",
+        "schemes": [
+            "http"
+        ],
+        "tags": [
+            {
+                "name": "Application Requests",
+                "description": "Операции с заявками"
+            },
+            {
+                "name": "Students",
+                "description": "Операции со студентами"
+            },
+            {
+                "name": "Rooms",
+                "description": "Операции с комнатами"
+            },
+            {
+                "name": "Hostels",
+                "description": "Операции с общежитиями"
+            }
+        ]
+    })
 
 # Инициализация Flask-RESTful
 api = Api(app)
@@ -82,6 +82,10 @@ def init_db():
 def main():
     init_db()
     app.run(host="0.0.0.0", port=80)
+    # server_base_url = request.url_root
+    # if not server_base_url.endswith('/'):
+    #     server_base_url += '/'
+    
 
 
 # загрузка пользователя, прошедшего логин
@@ -170,7 +174,10 @@ def logout():
 
 @app.route('/applications')
 def applications():
-    return render_template('applications.html', user=current_user)
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
+    return render_template('applications.html', user=current_user, server_url=server_base_url)
 
 
 @app.route('/admin')
