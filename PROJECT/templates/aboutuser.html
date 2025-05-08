@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Header</title>
+    <title>Профиль</title>
     <link rel="stylesheet" href="{{url_for('static', filename='CSS/aboutuser.css') }}">
 </head>
 <body>
@@ -46,9 +46,22 @@
                                 Женский
                             </label>
                         </div>
+                        
+                        <div class="input-group">
+                            <label for="personality">Курс</label>
+                            <select id="course" name="course" required>
+                                <option value="">Выберите</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="input-group">
+                    <!-- <div class="input-group">
                         <label for="age">Возраст</label>
                         <input type="number" id="age" name="age" min="16" max="99" required>
                     </div>
@@ -59,18 +72,6 @@
                             <option value="">Выберите тип</option>
                             <option value="introvert">Интроверт</option>
                             <option value="extrovert">Экстраверт</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label for="personality">Курс</label>
-                        <select id="personality" name="personality" required>
-                            <option value="">Выберите</option>
-                            <option value="introvert">1</option>
-                            <option value="extrovert">2</option>
-                            <option value="introvert">3</option>
-                            <option value="extrovert">4</option>
-                            <option value="introvert">5</option>
-                            
                         </select>
                     </div>
 
@@ -97,7 +98,7 @@
                             <option value="yes">Реально..?</option>
                             <option value="no">Не страдай фигней пж..</option>
                         </select>
-                    </div>
+                    </div> -->
 
                     <button type="submit" class="save-btn">Сохранить</button>
                 </form>
@@ -116,9 +117,10 @@
             // Сохраняем данные в localStorage
             const fullName = document.getElementById('fullname').value;
             localStorage.setItem('userFullName', fullName);
+            // console.log('Данные сохранены:', fullName);
             
             // Перенаправляем на главную страницу
-            window.location.href = "../../templates/basepage.html";
+            window.location.href = "/me";
         });
         </script>
 
