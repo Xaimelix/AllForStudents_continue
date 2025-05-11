@@ -33,16 +33,15 @@
                         <label for="fullname">ФИО</label>
                         <input type="text" id="fullname" name="fullname" value="{{item.name}} {{item.surname}}" required>
                     </div>
-
                     <div class="input-group">
                         <label>Пол</label>
                         <div class="radio-group">
                             <label>
-                                <input type="radio" name="gender" value="male" {% if item.sex == 1 %} checked {% endif %}>
+                                <input type="radio" name="gender" value="1" {% if item.sex == 1 %} checked {% endif %}>
                                 Мужской
                             </label>
                             <label>
-                                <input type="radio" name="gender" value="female" {% if item.sex == 0 %} checked {% endif %}>
+                                <input type="radio" name="gender" value="0" {% if item.sex == 0 %} checked {% endif %}>
                                 Женский
                             </label>
                         </div>
@@ -56,10 +55,122 @@
                                 <option value="3">3</option>
                                 <option value="4">4</option>
                                 <option value="5">5</option>
-                                
                             </select>
                         </div>
+                        <div>
+                            <label for="fullname">О себе</label>
+                            <input type="text" id="about" name="about" placeholder="Расскажите о себе">
+                        </div>
                     </div>
+                    <button type="submit" class="save-btn">Сохранить</button>
+                    </form>
+                    <script>
+        // Получаем элемент формы
+        const profileForm = document.querySelector('.profile-form');
+
+        // Добавляем обработчик события submit к форме
+        // Передаем только ссылку на функцию save_btn_click
+        profileForm.addEventListener('submit', save_btn_click);
+
+        // Асинхронная функция, которая будет вызвана при отправке формы
+        async function save_btn_click(event) {
+            // !!! ЭТО САМОЕ ГЛАВНОЕ ИСПРАВЛЕНИЕ !!!
+            // Отменяем стандартное поведение формы (отправку GET запроса и перезагрузку страницы)
+            event.preventDefault();
+
+            const currentCourse = document.getElementById('course').value;
+            const currentFullName = document.getElementById('fullname').value;
+            const about = document.getElementById('about').value;
+
+            // Получаем выбранное значение пола из радио-кнопок
+            const genderRadios = document.getElementsByName('gender');
+            let selectedGender = null;
+            for (const radio of genderRadios) {
+                if (radio.checked) {
+                    selectedGender = radio.value; // Получаем значение ('0' или '1' как строка)
+                    break;
+                }
+            }
+
+            try {
+                // Получаем базовый URL сервера
+                const serverBaseUrl = "{{ server_url }}";
+                // Получаем ID студента из контекста шаблона
+                const studentId = "{{ item.id }}";
+
+                // Формируем URL API для PUT запроса к конкретному студенту
+                const apiUrl = `${serverBaseUrl}api/students/${studentId}`;
+
+                // Подготавливаем данные для отправки в теле запроса (JSON)
+                const nameParts = currentFullName.trim().split(/\s+/); // Разбиваем ФИО на части, учитывая пробелы
+                const updatedData = {
+                    name: nameParts[0] || '', // Имя (первая часть ФИО)
+                    surname: nameParts.length > 1 ? nameParts.slice(1).join(' ') : '', // Фамилия (остальные части ФИО)
+
+                    // Преобразуем значение курса в число
+                    course: parseInt(currentCourse, 10),
+
+                    // Преобразуем значение пола ('0' или '1' строка) в булево значение,
+                    // как ожидает модель Student (sqlalchemy.Boolean)
+                    // '1' (мужской) -> true, '0' (женский) -> false
+                    // Проверяем, было ли выбрано значение пола
+                    sex: selectedGender !== null ? (selectedGender === '1') : undefined
+                };
+
+                const finalUpdatedData = {};
+                if (updatedData.name !== '') finalUpdatedData.name = updatedData.name;
+                if (updatedData.surname !== '') finalUpdatedData.surname = updatedData.surname;
+                if (!isNaN(updatedData.course)) finalUpdatedData.course = updatedData.course; // Проверяем, что курс - число
+                if (selectedGender !== null) finalUpdatedData.sex = updatedData.sex; // Добавляем пол, только если он был выбран
+                if (about !== '') finalUpdatedData.about = about; // Добавляем поле "О себе", только если оно заполнено
+
+                console.log('Данные, отправляемые в PUT запросе:', finalUpdatedData);
+
+
+                // Отправляем PUT запрос
+                const response = await fetch(apiUrl, {
+                    method: 'PUT', // Метод PUT для обновления
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(finalUpdatedData) // Преобразуем объект с данными в JSON строку и отправляем
+                });
+
+                console.log(`Получен ответ на PUT запрос. Статус: ${response.status}`);
+
+                // Обработка ответа от сервера
+                if (response.ok) { // Если статус ответа 2xx
+                     alert('Изменение данных успешно.');
+                     console.log('PUT запрос успешно выполнен.');
+                     window.location.reload(); // Перезагружаем страницу, чтобы увидеть изменения
+                } else { // Если статус ответа не 2xx (ошибка)
+                    let errorMessage = `Ошибка HTTP: ${response.status}`;
+                    // Попытаться получить сообщение об ошибке из JSON ответа сервера
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || `Ошибка сервера: ${response.status}`;
+                         console.error('Ответ сервера с ошибкой:', errorData);
+                    } catch (jsonError) {
+                         console.error('Не удалось распарсить JSON ответа ошибки:', jsonError);
+                         // Если ответ не в формате JSON, можно попробовать получить его как текст
+                         try {
+                             const errorText = await response.text();
+                             console.error('Тело ответа ошибки (текст):', errorText);
+                              errorMessage += ` - ${errorText.substring(0, 100)}...`; // Добавляем часть текста ошибки
+                         } catch (textError) {
+                              console.error('Не удалось получить тело ответа ошибки как текст:', textError);
+                         }
+                    }
+                    console.error('PUT запрос не выполнен:', errorMessage);
+                    alert(`Не удалось изменить данные: ${errorMessage}`); // Показываем ошибку пользователю
+                }
+            } catch (error) {
+                // Обработка ошибок при выполнении самого fetch запроса (например, сетевые проблемы)
+                console.error('Ошибка при выполнении запроса на изменение:', error);
+                alert(`Произошла ошибка отправке запроса на изменение: ${error.message}`); // Показываем ошибку пользователю
+            }
+        }
+    </script>
 
                     <!-- <div class="input-group">
                         <label for="age">Возраст</label>
@@ -100,8 +211,6 @@
                         </select>
                     </div> -->
 
-                    <button type="submit" class="save-btn">Сохранить</button>
-                </form>
             </div>
             <div style="display: flex; align-items: center; flex-direction: column;">
                 <h2 class="myapplications">Мои заявки</h2>
@@ -137,7 +246,7 @@
     </div>
     
 
-    <script>
+    <!-- <script>
         document.querySelector('.profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -149,7 +258,7 @@
             // Перенаправляем на главную страницу
             window.location.href = "/me";
         });
-        </script>
+        </script> -->
 
 </body>
 

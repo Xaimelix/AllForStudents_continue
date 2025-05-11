@@ -277,7 +277,7 @@
                 if (requestElement) {
                     requestElement.remove(); // Удаляем элемент
                 }
-                 alert(`Заявка ${requestId} одобрена.`); // Оповещение пользователя
+                alert(`Заявка ${requestId} одобрена.`); // Оповещение пользователя
             } else {
                 // Получаем сообщение об ошибке от сервера, если оно есть в формате JSON
                 const errorData = await response.json();
