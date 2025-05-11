@@ -533,7 +533,18 @@ class StudentListResource(Resource):
         return {'students': result}, 200
     
 
-    # TODO: Добавить метод put(self, student_id) для обновления студента
+
+student_put_parser = reqparse.RequestParser()
+# Указываем location='json' для всех полей, которые можно обновлять
+# required=False для большинства полей, так как PUT может быть частичным обновлением
+student_put_parser.add_argument('login', type=str, required=False, help='Новый логин студента', location='json')
+student_put_parser.add_argument('name', type=str, required=False, help='Новое имя студента', location='json')
+student_put_parser.add_argument('surname', type=str, required=False, help='Новая фамилия студента', location='json')
+student_put_parser.add_argument('room_id', type=int, required=False, help='Новый ID комнаты', location='json')
+student_put_parser.add_argument('course', type=int, required=False, help='Новый курс студента', location='json')
+student_put_parser.add_argument('about', type=str, required=False, help='Новая информация о студенте', location='json')
+student_put_parser.add_argument('sex', type=bool, required=False, help='Новый пол студента (True - мужской, False - женская)', location='json')
+
 class StudentItemResource(Resource):
     def get(self, student_id):
         """Получение инф студенте по ID.
@@ -615,6 +626,146 @@ class StudentItemResource(Resource):
             'sex': student.sex
         }
         return {'student': result}, 200
+    
+    def put(self, student_id):
+        """Обновление информации о студенте по ID.
+        ---
+        tags:
+          - Students
+        parameters:
+          - name: student_id
+            in: path
+            type: integer
+            required: true
+            description: ID студента для обновления
+          - name: body # Описание тела запроса
+            in: body
+            schema: # Схема ожидаемого JSON тела
+              type: object
+              properties:
+                login:
+                  type: string
+                name:
+                  type: string
+                surname:
+                  type: string
+                room_id:
+                  type: integer
+                  nullable: true # Укажите nullable, если поле может быть None
+                course:
+                  type: integer
+                  nullable: true # Укажите nullable, если поле может быть None
+                about:
+                  type: string
+                  nullable: true # Укажите nullable, если поле может быть None
+                sex:
+                  type: boolean
+                  nullable: true # Укажите nullable, если поле может быть None
+              # required: # Можно указать поля, которые обязательны в теле запроса, но для частичного PUT это обычно не делают
+              #  - course
+        responses:
+          200:
+            description: Информация о студенте успешно обновлена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          400:
+            description: Неверный формат данных
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          404:
+            description: Студент не найден
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при обновлении студента
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+    # Используем новый парсер для PUT запроса, который ожидает JSON
+        # strict=False позволяет игнорировать поля в JSON, которых нет в парсере
+        # (полезно, если клиент отправит больше данных, чем разрешено обновлять)
+        args = student_put_parser.parse_args(strict=False)
+
+
+        db_sess = create_session()
+        try:
+            # Ищем студента по ID
+            student_to_update = db_sess.query(Student).filter(Student.id == student_id).first()
+
+            # Если студент не найден, возвращаем 404
+            if not student_to_update:
+                return {'message': f'Студент с ID {student_id} не найден'}, 404
+
+            # Обновляем поля студента только если они присутствуют в args (т.е. были переданы в запросе)
+            # Это позволяет делать частичные обновления (например, менять только курс)
+
+            if 'login' in args and args['login'] is not None:
+                # TODO: Добавьте проверку на уникальность логина, если он был изменен
+                student_to_update.login = args['login']
+
+            if 'name' in args and args['name'] is not None:
+                student_to_update.name = args['name']
+
+            if 'surname' in args and args['surname'] is not None:
+                student_to_update.surname = args['surname']
+
+            if 'room_id' in args and args['room_id'] is not None:
+                # TODO: Добавьте проверку на существование комнаты с таким ID
+                student_to_update.room_id = args['room_id']
+            # Специальная обработка для возможности установки room_id в None
+            elif 'room_id' in args and args['room_id'] is None:
+                student_to_update.room_id = None
+
+
+            if 'course' in args and args['course'] is not None:
+                student_to_update.course = args['course'] # <-- Обновление поля "course"
+            # Специальная обработка для возможности установки course в None
+            elif 'course' in args and args['course'] is None:
+                student_to_update.course = None
+
+
+            if 'about' in args and args['about'] is not None:
+                student_to_update.about = args['about']
+            # Специальная обработка для возможности установки about в None
+            elif 'about' in args and args['about'] is None:
+                student_to_update.about = None
+
+
+            if 'sex' in args and args['sex'] is not None:
+                student_to_update.sex = args['sex']
+            # Специальная обработка для возможности установки sex в None (если nullable в модели)
+            # elif 'sex' in args and args['sex'] is None:
+            #      student_to_update.sex = None
+
+
+            # TODO: НЕ ОБНОВЛЯЙТЕ hashed_password напрямую здесь без специальной логики (например, проверки старого пароля)
+            # Если нужно менять пароль, создайте отдельный защищенный эндпоинт для смены пароля.
+
+
+            # Коммитим изменения в базу данных
+            db_sess.commit()
+
+            # Возвращаем успешный ответ
+            return {'message': f'Информация о студенте с ID {student_id} успешно обновлена'}, 200
+
+        except Exception as e:
+            # Откатываем изменения в случае ошибки и возвращаем 500
+            db_sess.rollback()
+            return {'message': f'Ошибка при обновлении студента с ID {student_id}: {e}'}, 500
+        finally:
+            db_sess.close()
     
 
     def delete(self, student_id):
