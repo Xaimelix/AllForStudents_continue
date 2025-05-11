@@ -227,6 +227,16 @@ input[type="radio"] {
     cursor: pointer;
 }
 
+.myapplications {
+    font-size: 40px;
+    font-weight: 800;
+    color: #000000;
+    margin-bottom: 40px;
+    margin-top: 40px;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .LIST {

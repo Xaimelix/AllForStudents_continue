@@ -103,8 +103,35 @@
                     <button type="submit" class="save-btn">Сохранить</button>
                 </form>
             </div>
-            <h2 class="myapplications">Мои заявки</h2>
-                
+            <div style="display: flex; align-items: center; flex-direction: column;">
+                <h2 class="myapplications">Мои заявки</h2>
+            </div>
+            <div>
+                {% if applications %}
+                <div class="list-group">
+                    {% for app in applications %}
+                        <div class="list-group-item" style="margin-bottom: 10px; padding: 10px; border-radius: 5px; background-color: #f8f9fa; display: flex;
+                            flex-direction: column; align-items: center;">
+                            <h5>Заявка № {{ app.id }}</h5>
+                            {% if app.status == '0' %}
+                                <p style="color: orange;"><strong>Статус:</strong> Ожидает подтверждения</p>
+                            {% elif app.status == '1' %}
+                                <p style="color: green;"><strong>Статус:</strong> Подтверждено</p>
+                            {% elif app.status == '2' %}
+                                <p style="color: red;"><strong>Статус:</strong> Отклонено</p>
+                            {% else %}
+                                <p style="color: gray;"><strong>Статус:</strong> Неизвестный статус</p>
+                            {% endif %}
+                            <p><strong>Дата въезда:</strong> {{ app.date_entr if app.date_entr is not none else 'Не указана' }}</p>
+                            <p><strong>Дата выезда:</strong> {{ app.date_exit if app.date_exit is not none else 'Не указана' }}</p>
+                            <p><strong>Комната ID:</strong> {{ app.room_id }}</p>
+                        </div>
+                {% endfor %}
+                </div>
+                {% else %}
+                <p>У студента нет активных заявок на переселение.</p>
+                {% endif %}
+            </div>
         </div>
 
     </div>

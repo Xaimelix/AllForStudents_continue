@@ -104,9 +104,35 @@ def main_page():
 # страница пользователя
 @app.route('/me')
 def myself():
+    db_sess = db_session.create_session()
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
     if not current_user.is_authenticated:
         return redirect('/login')
-    return render_template('aboutuser.html', item=current_user)
+    try:
+        student_applications = db_sess.query(Application_request)\
+                                        .filter(Application_request.student_id == current_user.id)\
+                                        .all()
+        applications_data = []
+        for req in student_applications:
+            applications_data.append({
+                'id': req.id,
+                'status': req.status,
+                'date_entr': req.date_entr.strftime('%Y-%m-%d') if req.date_entr else 'Не указана',
+                'date_exit': req.date_exit.strftime('%Y-%m-%d') if req.date_exit else 'Не указана',
+                'room_id': req.room_id,
+                'student_id': req.student_id
+            })
+
+        return render_template('aboutuser.html', item=current_user, server_url=server_base_url, applications=applications_data)
+    except Exception as e:
+            # Обработка ошибок при загрузке данных
+            print(f"Ошибка при загрузке профиля студента с ID {current_user.id}: {e}")
+            return render_template('error.html', message=f"Произошла ошибка при загрузке профиля студента: {e}"), 500
+    finally:
+        # Обязательно закрываем сессию базы данных
+        db_sess.close()
 
 
 # страница общежитий

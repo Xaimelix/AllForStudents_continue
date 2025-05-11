@@ -372,14 +372,14 @@ class ApplicationRequestItemResource(Resource):
 
 # --- Парсер для StudentListResource (для методов POST/PUT) ---
 student_parser = reqparse.RequestParser()
-student_parser.add_argument('login', type=str, required=True, help='Логин студента обязателен', location='form') # <-- Добавлено location='form'
-student_parser.add_argument('hashed_password', type=str, required=True, help='Хэшированный пароль обязателен', location='form') # <-- Добавлено location='form'
-student_parser.add_argument('name', type=str, required=True, help='Имя студента обязательно', location='form') # <-- Добавлено location='form'
-student_parser.add_argument('surname', type=str, required=True, help='Фамилия студента обязательна', location='form') # <-- Добавлено location='form'
-student_parser.add_argument('room_id', type=int, help='ID комнаты', location='form') # <-- Добавлено location='form'
-student_parser.add_argument('course', type=int, help='Курс студента', location='form') # <-- Добавлено location='form'
-student_parser.add_argument('about', type=str, help='О студенте', location='form') # <-- Добавлено location='form'
-student_parser.add_argument('sex', type=bool, help='Пол студента', location='form') # <-- Добавлено location='form'
+student_parser.add_argument('login', type=str, required=True, help='Логин студента обязателен', location='form') 
+student_parser.add_argument('hashed_password', type=str, required=True, help='Хэшированный пароль обязателен', location='form')
+student_parser.add_argument('name', type=str, required=True, help='Имя студента обязательно', location='form')
+student_parser.add_argument('surname', type=str, required=True, help='Фамилия студента обязательна', location='form')
+student_parser.add_argument('room_id', type=int, help='ID комнаты', location='form') 
+student_parser.add_argument('course', type=int, help='Курс студента', location='form')
+student_parser.add_argument('about', type=str, help='О студенте', location='form')
+student_parser.add_argument('sex', type=bool, help='Пол студента', location='form')
 
 class StudentListResource(Resource):
     def post(self):
@@ -745,14 +745,6 @@ class StudentItemResource(Resource):
 
             if 'sex' in args and args['sex'] is not None:
                 student_to_update.sex = args['sex']
-            # Специальная обработка для возможности установки sex в None (если nullable в модели)
-            # elif 'sex' in args and args['sex'] is None:
-            #      student_to_update.sex = None
-
-
-            # TODO: НЕ ОБНОВЛЯЙТЕ hashed_password напрямую здесь без специальной логики (например, проверки старого пароля)
-            # Если нужно менять пароль, создайте отдельный защищенный эндпоинт для смены пароля.
-
 
             # Коммитим изменения в базу данных
             db_sess.commit()
