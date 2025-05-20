@@ -146,6 +146,21 @@ def room():
     return render_template('application.html')
 
 
+@app.route('/book_room/<id>', methods=['GET', 'POST'])
+def book_room(id):
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
+    db_sess = db_session.create_session()
+    if current_user.is_authenticated:
+        student = db_sess.query(Student).filter(Student.id == current_user.id).first()
+        if student:
+            return render_template('book_room.html', item=student, room_id=id, server_url=server_base_url)
+    else:
+        return redirect('/login')
+    db_sess.close()
+
+
 # регистрация
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():

@@ -18,11 +18,11 @@ import io
 
 # --- Парсер для ApplicationRequestResource (для методов POST/PUT) ---
 application_request_parser = reqparse.RequestParser()
-application_request_parser.add_argument('status', type=str, required=True, help='Статус заявки обязателен', location='form') # <-- Добавлено location='form'
-application_request_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)', location='form') # <-- Добавлено location='form'
-application_request_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)', location='form') # <-- Добавлено location='form'
-application_request_parser.add_argument('room_id', type=int, required=True, help='ID комнаты обязателен', location='form') # <-- Добавлено location='form'
-application_request_parser.add_argument('student_id', type=int, required=True, help='ID студента обязателен', location='form') # <-- Добавлено location='form'
+application_request_parser.add_argument('status', type=str, required=True, help='Статус заявки обязателен', location=['json', 'form'])
+application_request_parser.add_argument('room_id', type=int, required=True, help='ID комнаты обязателен', location=['json', 'form'])
+application_request_parser.add_argument('student_id', type=int, required=True, help='ID студента обязателен', location=['json', 'form'])
+application_request_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)', location=['json', 'form'])
+application_request_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)', location=['json', 'form'])
 
 
 # --- Новый класс для операций над коллекцией заявок ---
