@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rooms</title>
+    <style>
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .filter-group {
+            margin-right: 20px;
+            display: inline-block;
+        }
+        .filter-group label {
+            margin-right: 5px;
+        }
+        input, select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 5px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Фильтры -->
+    <form method="GET" action="" class="filter-section">
+        <div class="filter-group">
+            <label>Площадь:</label>
+            <input type="number" name="min_square" placeholder="от"
+                   value="{{ request.args.get('min_square', '') }}">
+            <input type="number" name="max_square" placeholder="до"
+                   value="{{ request.args.get('max_square', '') }}">
+        </div>
+
+        <div class="filter-group">
+            <label>Мест:</label>
+            <select name="max_students">
+                <option value="">Любое</option>
+                {% for i in range(1, 6) %}
+                <option value="{{ i }}"
+                    {% if request.args.get('max_students') == i|string %}selected{% endif %}>
+                    {{ i }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Пол:</label>
+            <select name="sex">
+                <option value="any" {% if request.args.get('sex', 'any') == 'any' %}selected{% endif %}>
+                    Любой
+                </option>
+                <option value="1" {% if request.args.get('sex') == '1' %}selected{% endif %}>
+                    Мужской
+                </option>
+                <option value="0" {% if request.args.get('sex') == '0' %}selected{% endif %}>
+                    Женский
+                </option>
+            </select>
+        </div>
+
+        <button type="submit">Фильтровать</button>
+        <a href="{{ url_for('rooms') }}" style="margin-left: 10px;">Сбросить</a>
+    </form>
+
+    {% for room in rooms %}
+    <div class="col d-flex">
+        <div class="h-100 w-100">
+            <div class="text-center">
+                <h5>{{ room.square }} квадратных метров</h5>
+                <p>Мест: {{ room.max_cnt_student }}</p>
+                <div>Пол: {{ room.sex }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>
