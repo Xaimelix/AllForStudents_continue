@@ -93,32 +93,25 @@ class ApplicationRequestsListResource(Resource):
         ---
         tags:
           - Application Requests
-        parameters: # <-- Начинаем список параметров
-          - name: status # <-- Первый параметр
-            in: formData
-            type: string
+        parameters:
+          - in: body
+            name: body
             required: true
-            description: Статус заявки
-          - name: date_entr # <-- Второй параметр
-            in: formData
-            type: string
-            required: false # Или true, если дата обязательна
-            description: Дата въезда (YYYY-MM-DD)
-          - name: date_exit # <-- Третий параметр
-            in: formData
-            type: string
-            required: false # Или true, если дата обязательна
-            description: Дата выезда (YYYY-MM-DD)
-          - name: room_id # <-- Четвертый параметр
-            in: formData
-            type: integer
-            required: true
-            description: ID комнаты
-          - name: student_id # <-- Пятый параметр
-            in: formData
-            type: integer
-            required: true
-            description: ID студента
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                date_entr:
+                  type: string
+                  format: date
+                date_exit:
+                  type: string
+                  format: date
+                room_id:
+                  type: integer
+                student_id:
+                  type: integer
         responses:
           201:
             description: Заявка успешно создана
@@ -145,7 +138,6 @@ class ApplicationRequestsListResource(Resource):
                   type: string
         """
         args = application_request_parser.parse_args()
-        # print(args)
 
         date_entr = None
         date_exit = None
@@ -177,9 +169,13 @@ class ApplicationRequestsListResource(Resource):
             db_sess.close()
 
 
-application_status_parser = reqparse.RequestParser()
+application_put_parser = reqparse.RequestParser()
 # Указываем, что ожидаем 'status' в теле запроса в формате JSON
-application_status_parser.add_argument('status', type=str, required=True, help='Новый статус заявки обязателен', location='json')
+application_put_parser.add_argument('status', type=str, help='Статус заявки обязателен', location=['json', 'form'])
+application_put_parser.add_argument('room_id', type=int, help='ID комнаты обязателен', location=['json', 'form'])
+application_put_parser.add_argument('student_id', type=int, help='ID студента обязателен', location=['json', 'form'])
+application_put_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)', location=['json', 'form'])
+application_put_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)', location=['json', 'form'])
 
 # --- Новый класс для операций над отдельной заявкой по ID ---
 class ApplicationRequestItemResource(Resource):
@@ -283,6 +279,7 @@ class ApplicationRequestItemResource(Resource):
             return {'message': f'Ошибка при удалении заявки с ID {request_id}: {e}'}, 500
         finally:
             db_sess.close()
+
     def put(self, request_id):
         """Обновление статуса заявки по ID.
         ---
@@ -334,8 +331,13 @@ class ApplicationRequestItemResource(Resource):
                 message:
                   type: string
         """
-        args = application_status_parser.parse_args(strict=True) # Используем новый парсер для статуса, strict=True для игнорирования других полей
+        args = application_put_parser.parse_args(strict=False) # Используем новый парсер для статуса, strict=True для игнорирования других полей
         new_status = args.get('status') # Получаем новый статус
+        new_room_id = args.get('room_id') # Получаем новый room_id
+        new_student_id = args.get('student_id') # Получаем новый student_id
+        new_date_entr = args.get('date_entr') # Получаем новую дату въезда
+        new_date_exit = args.get('date_exit') # Получаем новую дату выезда
+        # Проверяем, что новый статус указан
 
         if new_status is None:
             return {'message': 'В теле запроса должен быть указан новый статус ("status").'}, 400
@@ -356,6 +358,15 @@ class ApplicationRequestItemResource(Resource):
 
             # Обновляем статус
             request_to_update.status = new_status
+            if new_room_id is not None:
+                request_to_update.room_id = new_room_id
+            if new_student_id is not None:
+                request_to_update.student_id = new_student_id
+            if new_date_entr is not None:
+                request_to_update.date_entr = datetime.strptime(new_date_entr, '%Y-%m-%d').date()
+            if new_date_exit is not None:
+                request_to_update.date_exit = datetime.strptime(new_date_exit, '%Y-%m-%d').date()
+            
 
             # Коммитим изменения
             db_sess.commit()
@@ -401,7 +412,7 @@ class StudentListResource(Resource):
           - name: name
             in: formData
             type: string
-            required: true
+            required: trueF
             description: Имя студента
           - name: surname
             in: formData
@@ -436,7 +447,7 @@ class StudentListResource(Resource):
               properties:
                 message:
                   type: string
-                student_id: # Исправлено с request_id на student_id
+                student_id:
                   type: integer
           500:
             description: Ошибка при создании студента
@@ -639,7 +650,7 @@ class StudentItemResource(Resource):
             required: true
             description: ID студента для обновления
           - name: body # Описание тела запроса
-            in: body
+            in: formData
             schema: # Схема ожидаемого JSON тела
               type: object
               properties:
@@ -811,14 +822,14 @@ class StudentItemResource(Resource):
             db_sess.close()
 
 room_parser = reqparse.RequestParser()
-# !!! ДОБАВЛЕНО location='form' КО ВСЕМ АРГУМЕНТАМ ПАРСЕРА КОМНАТ !!!
-room_parser.add_argument('hostel_id', type=int, required=True, help='Номер общежития обязателен', location='form')
-room_parser.add_argument('square', type=float, required=True, help='Площадь комнаты обязательна', location='form')
-room_parser.add_argument('max_cnt_student', type=int, required=True, help='Максимальное количество студентов в комнате обязательно', location='form')
-room_parser.add_argument('cur_cnt_student', type=int, required=True, help='Текущее количество студентов в комнате обязательно', location='form')
-room_parser.add_argument('floor', type=int, required=True, help='Этаж комнаты обязателен', location='form')
-room_parser.add_argument('sex', type=bool, required=True, help='Пол комнаты (True - мужская, False - женская) обязателен', location='form')
-room_parser.add_argument('side', type=str, required=True, help='Сторона комнаты (например, "s - south", "n - north") обязательна', location='form')
+# Указываем location='json' для всех полей, которые можно обновлять
+room_parser.add_argument('hostel_id', type=int, required=True, help='Номер общежития обязателен', location=['form', 'json'])
+room_parser.add_argument('square', type=float, required=True, help='Площадь комнаты обязательна', location=['form', 'json'])
+room_parser.add_argument('max_cnt_student', type=int, required=True, help='Максимальное количество студентов в комнате обязательно', location=['form', 'json'])
+room_parser.add_argument('cur_cnt_student', type=int, required=True, help='Текущее количество студентов в комнате обязательно', location=['form', 'json'])
+room_parser.add_argument('floor', type=int, required=True, help='Этаж комнаты обязателен', location=['form', 'json'])
+room_parser.add_argument('sex', type=bool, required=True, help='Пол комнаты (True - мужская, False - женская) обязателен', location=['form', 'json'])
+room_parser.add_argument('side', type=str, required=True, help='Сторона комнаты (например, "s - south", "n - north") обязательна', location=['form', 'json'])
 
 
 # --- Новый класс для операций над коллекцией комнат ---
@@ -845,10 +856,6 @@ class RoomListResource(Resource):
               properties:
                 message:
                   type: string
-        # Определения схем лучше делать один раз в конце файла
-        # definitions:
-        #   Room:
-        #     ...
         """
         db_sess = create_session()
         try:
@@ -873,46 +880,49 @@ class RoomListResource(Resource):
 
 
     def post(self):
-        """Создание новой комнаты.
+        """
+        Создание новой комнаты.
         ---
         tags:
           - Rooms
-        parameters: # <-- Параметры формы для создания комнаты
-          - name: hostel_id
-            in: formData
-            type: integer
+        consumes:
+          - application/json
+        parameters:
+          - in: body
+            name: body
             required: true
-            description: Номер общежития
-          - name: square
-            in: formData
-            type: number # Для float в Swagger используется number
-            required: true
-            description: Площадь комнаты
-          - name: max_cnt_student
-            in: formData
-            type: integer
-            required: true
-            description: Максимальное количество студентов в комнате
-          - name: cur_cnt_student
-            in: formData
-            type: integer
-            required: true
-            description: Текущее количество студентов в комнате
-          - name: floor
-            in: formData
-            type: integer
-            required: true
-            description: Этаж комнаты
-          - name: sex
-            in: formData
-            type: boolean
-            required: true
-            description: Пол комнаты (True - мужская, False - женская)
-          - name: side
-            in: formData
-            type: string
-            required: true
-            description: Сторона комнаты (например, "s - south", "n - north")
+            schema:
+              type: object
+              properties:
+                hostel_id:
+                  type: integer
+                  description: Номер общежития
+                square:
+                  type: number
+                  description: Площадь комнаты
+                max_cnt_student:
+                  type: integer
+                  description: Максимальное количество студентов в комнате
+                cur_cnt_student:
+                  type: integer
+                  description: Текущее количество студентов в комнате
+                floor:
+                  type: integer
+                  description: Этаж комнаты
+                sex:
+                  type: boolean
+                  description: Пол комнаты (True — мужская, False — женская)
+                side:
+                  type: string
+                  description: Сторона комнаты (например, "s", "n", "e", "w")
+              required:
+                - hostel_id
+                - square
+                - max_cnt_student
+                - cur_cnt_student
+                - floor
+                - sex
+                - side
         responses:
           201:
             description: Комната успешно создана
@@ -923,6 +933,13 @@ class RoomListResource(Resource):
                   type: string
                 room_id:
                   type: integer
+          400:
+            description: Неверные входные данные
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
           500:
             description: Ошибка при создании комнаты
             schema:
@@ -930,10 +947,6 @@ class RoomListResource(Resource):
               properties:
                 message:
                   type: string
-        # Определения схем лучше делать один раз в конце файла
-        # definitions:
-        #   Room:
-        #     ...
         """
         args = room_parser.parse_args() # Используем room_parser
         db_sess = create_session()
@@ -955,6 +968,7 @@ class RoomListResource(Resource):
             return {'message': f'Ошибка при создании комнаты: {e}'}, 500
         finally:
             db_sess.close()
+
 
 # --- Новый класс для операций над отдельной комнатой по ID ---
 class RoomItemResource(Resource):
@@ -1015,6 +1029,102 @@ class RoomItemResource(Resource):
         finally:
             db_sess.close()
 
+    def put(self, room_id):
+        """Обновление информации о комнате по ID.
+        ---
+        tags:
+          - Rooms
+        parameters:
+          - name: room_id
+            in: path
+            type: integer
+            required: true
+            description: ID комнаты для обновления
+          - name: body
+            in: body
+            schema:
+              type: object
+              properties:
+                hostel_id:
+                  type: integer
+                square:
+                  type: number
+                max_cnt_student:
+                  type: integer
+                cur_cnt_student:
+                  type: integer
+                floor:
+                  type: integer
+                sex:
+                  type: boolean
+                side:
+                  type: string
+              required:
+                - hostel_id
+        responses:
+          200:
+            description: Информация о комнате успешно обновлена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          400:
+            description: Неверный формат данных
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          404:
+            description: Комната не найдена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при обновлении комнаты
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        args = room_parser.parse_args()
+        db_sess = create_session()
+        try:
+            # Ищем комнату по ID
+            room_to_update = db_sess.query(Room).filter(Room.id == room_id).first()
+            # Если комната не найдена, возвращаем 404
+            if not room_to_update:
+                return {'message': f'Комната с ID {room_id} не найдена'}, 404
+            # Обновляем поля комнаты только если они присутствуют в args (т.е. были переданы в запросе)
+            # Это позволяет делать частичные обновления (например, менять только площадь)
+            if 'hostel_id' in args and args['hostel_id'] is not None:
+                room_to_update.hostel_id = args['hostel_id']
+            if 'square' in args and args['square'] is not None:
+                room_to_update.square = args['square']
+            if 'max_cnt_student' in args and args['max_cnt_student'] is not None:
+                room_to_update.max_cnt_student = args['max_cnt_student']
+            if 'cur_cnt_student' in args and args['cur_cnt_student'] is not None:
+                room_to_update.cur_cnt_student = args['cur_cnt_student']
+            if 'floor' in args and args['floor'] is not None:
+                room_to_update.floor = args['floor']
+            if 'sex' in args and args['sex'] is not None:
+                room_to_update.sex = args['sex']
+            if 'side' in args and args['side'] is not None:
+                room_to_update.side = args['side']
+            # Коммитим изменения
+            db_sess.commit()
+            # Возвращаем успешный ответ
+            return {'message': f'Информация о комнате с ID {room_id} успешно обновлена'}, 200
+        except Exception as e:
+            # Откатываем изменения в случае ошибки и возвращаем 500
+            db_sess.rollback()
+            return {'message': f'Ошибка при обновлении комнаты с ID {room_id}: {e}'}, 500
+        finally:
+            db_sess.close()
 
     def delete(self, room_id):
         """Удаление комнаты по ID.
@@ -1072,8 +1182,8 @@ class RoomItemResource(Resource):
 # --- Парсер для HostelResource (для методов POST/PUT) ---
 hostel_parser = reqparse.RequestParser()
 # !!! ДОБАВЛЕНО location='form' КО ВСЕМ АРГУМЕНТАМ ПАРСЕРА ОБЩЕЖИТИЙ !!!
-hostel_parser.add_argument('address', type=str, required=True, help='Адрес общежития обязателен', location='form')
-hostel_parser.add_argument('district', type=str, required=True, help='Район общежития обязателен', location='form')
+hostel_parser.add_argument('address', type=str, required=True, help='Адрес общежития обязателен', location=['form', 'json'])
+hostel_parser.add_argument('district', type=str, required=True, help='Район общежития обязателен', location=['form', 'json'])
 
 
 # --- Новый класс для операций над коллекцией общежитий ---
@@ -1126,18 +1236,25 @@ class HostelListResource(Resource):
         """Создание нового общежития.
         ---
         tags:
-            - Hostels
-        parameters: # <-- Параметры формы для создания общежития
-          - name: address
-            in: formData
-            type: string
+          - Hostels
+        consumes:
+          - application/json
+        parameters: 
+          - in: body
+            name: body
             required: true
-            description: Адрес общежития
-          - name: district
-            in: formData
-            type: string
-            required: true
-            description: Район общежития
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                  description: Адрес общежития
+                district:
+                  type: string
+                  description: Район общежития
+              required:
+                - address
+                - district
         responses:
           201:
             description: Общежитие успешно создано

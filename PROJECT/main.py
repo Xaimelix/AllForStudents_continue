@@ -30,6 +30,9 @@ swagger = Swagger(app, template={
             "description": "Документация для всех доступных API",
             "version": "1.0"
         },
+        "consumes": [
+        "application/json"
+        ],
         # "host": f"",
         "basePath": "/",
         "schemes": [
@@ -66,7 +69,7 @@ initialize_routes(api)
 # Это может быть небезопасно, если у вас есть чувствительные данные или вы хотите ограничить доступ к API.
 # Лучше использовать более строгие настройки CORS в продакшене.
 # Строка ниже решает проблему "TypeError: NetworkError when attempting to fetch resource." в Swagger UI.
-CORS(app)
+# CORS(app)
 # Если тебе нужно ограничить разрешенные источники, можно сделать так:
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.

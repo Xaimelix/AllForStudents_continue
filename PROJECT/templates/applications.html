@@ -117,7 +117,8 @@
     
     // URL твоего API эндпоинта для обновления статуса заявки (PUT запрос по ID)
     // Он должен соответствовать маршруту ApplicationRequestItemResource: /api/application_requests/<int:request_id>
-    const updateStatusApiUrl = `${serverBaseUrl}api/application_requests/`; // Базовый URL, к которому добавим ID заявки
+    const updateStatusApiUrl_application_requests = `${serverBaseUrl}api/application_requests/`; // Базовый URL, к которому добавим ID заявки
+    const updateStatusApiUrl_room = `${serverBaseUrl}api/rooms/`; // Базовый URL для изменения комнаты, к которому добавим ID заявки
 
 
     // Функция для получения и отображения заявок со статусом 0
@@ -258,7 +259,7 @@
         try {
             // Отправляем PUT запрос к API для изменения статуса заявки на "1" (одобрено)
             console.log(`Отправка PUT запроса для одобрения заявки ID ${requestId}`); // Логгирование запроса
-            const response = await fetch(`${updateStatusApiUrl}${requestId}`, { // Используем базовый URL + ID
+            const response = await fetch(`${updateStatusApiUrl_application_requests}${requestId}`, { // Используем базовый URL + ID
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json' // Указываем, что отправляем JSON
@@ -286,10 +287,46 @@
                 alert(`Не удалось одобрить заявку ${requestId}. ${errorMessage}`); // Показываем ошибку пользователю
             }
 
-        } catch (error) {
-            console.error('Ошибка при выполнении запроса на одобрение:', error);
-             alert(`Произошла ошибка при одобрении заявки ${requestId}: ${error.message}`); // Показываем ошибку пользователю
-        }
+            } catch (error) {
+                console.error('Ошибка при выполнении запроса на одобрение:', error);
+                alert(`Произошла ошибка при одобрении заявки ${requestId}: ${error.message}`); // Показываем ошибку пользователю
+            }
+            
+        try {
+            // Отправляем PUT запрос к API для изменения статуса заявки на "1" (одобрено)
+            console.log(`Отправка PUT запроса для изменения комнаты (уеличение количества жильцов) ID ${requestId}`); // Логгирование запроса
+            const response = await fetch(`${updateStatusApiUrl_application_requests}${requestId}`, { // Используем базовый URL + ID
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json' // Указываем, что отправляем JSON
+                    // TODO: Добавь заголовок авторизации, если он нужен
+                },
+                body: JSON.stringify({ status: '1' }) // Отправляем JSON с новым статусом '1'
+            });
+
+            console.log(`Получен ответ на PUT запрос для одобрения заявки ID ${requestId}. Статус: ${response.status}`); // Логгирование ответа
+
+            // Проверяем, успешен ли был запрос
+            if (response.ok) {
+                console.log(`Изменение комнаты успешно requestId: ${requestId}.`);
+                // Обновить интерфейс: удалить этот блок заявки с страницы
+                const requestElement = event.target.closest('.application-request-item'); // Находим родительский элемент заявки
+                if (requestElement) {
+                    requestElement.remove(); // Удаляем элемент
+                }
+                alert(`Изменение комнаты успешно requestId: ${requestId}.`); // Оповещение пользователя
+            } else {
+                // Получаем сообщение об ошибке от сервера, если оно есть в формате JSON
+                const errorData = await response.json();
+                const errorMessage = errorData.message || `Ошибка HTTP: ${response.status}`;
+                console.error(`Ошибка при изменении ${requestId}: ${errorMessage}`);
+                alert(`Не удалось изменить комнату ${requestId}. ${errorMessage}`); // Показываем ошибку пользователю
+            }
+
+            } catch (error) {
+                console.error('Ошибка при выполнении запроса на изменение комнаты:', error);
+                alert(`Произошла ошибка при изменении ${requestId}: ${error.message}`); // Показываем ошибку пользователю
+            }
     }
 
     async function handleRejectClick(event) {
@@ -299,7 +336,7 @@
          try {
             // Отправляем PUT запрос к API для изменения статуса заявки на "2" (отклонено)
             console.log(`Отправка PUT запроса для отклонения заявки ID ${requestId}`); // Логгирование запроса
-            const response = await fetch(`${updateStatusApiUrl}${requestId}`, { // Используем базовый URL + ID
+            const response = await fetch(`${updateStatusApiUrl_room}${requestId}`, { // Используем базовый URL + ID
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json' // Указываем, что отправляем JSON
