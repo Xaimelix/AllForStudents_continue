@@ -27,7 +27,7 @@ swagger = Swagger(app, template={
         "swagger": "2.0",
         "info": {
             "title": "API документация",
-            "description": "Документация для всех доступных API",
+            "description": "Документация д  ля всех доступных API",
             "version": "1.0"
         },
         "consumes": [
@@ -146,7 +146,34 @@ def hostel():
 
 @app.route('/rooms')
 def room():
-    return render_template('application.html')
+    return (render_template('application.html'))
+
+
+@app.route('/filtersbutthisrooms')
+def test_rooms():
+    session = db_session.create_session()
+
+    min_square = request.args.get('min_square', type=int)
+    max_square = request.args.get('max_square', type=int)
+    max_students = request.args.get('max_students', type=int)
+    sex_filter = request.args.get('sex', 'any')
+
+    query = session.query(Room)
+
+    if min_square:
+        query = query.filter(Room.square >= min_square)
+    if max_square:
+        query = query.filter(Room.square <= max_square)
+    if max_students:
+        query = query.filter(Room.max_cnt_student == max_students)
+    if sex_filter != 'any':
+        query = query.filter(Room.sex == int(sex_filter))  # Исправлено здесь
+
+    rooms = query.all()
+
+    return render_template('test_rooms.html',
+                           rooms=rooms,
+                           current_filters=request.args)
 
 
 @app.route('/book_room/<id>', methods=['GET', 'POST'])
