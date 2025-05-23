@@ -17,6 +17,7 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            flex-direction: column;
             justify-content: center;
             background: linear-gradient(135deg, #fffe27 0%, #da9958 100%);
             padding: 20px;
@@ -213,6 +214,8 @@
             <p>{{ form.submit(type="submit", class="basic_font") }}</p>
         </form>
         <div id="message" class="message"><p>{{ message }}</p></div>
+        <p style="display: flex; flex-direction: column; align-items: center; padding-top: 10%;">
+            <a style="font-weight: 600; font-size: 0.95em;" href="/login" class="forgot-password">Уже есть аккаунт Войдите!</a></p>
     </div>
 
     <script>

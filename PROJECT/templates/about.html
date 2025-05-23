@@ -1,0 +1,336 @@
+<html>
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+    />
+        <style>
+        body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: #ffffff;
+    line-height: 1.6;
+        }
+
+        /* Стили для шапки */
+        .header {
+            width: 100%;
+            background-color: #f1f1f1;
+            padding: 10px 0;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 0 20px;
+            flex-wrap: wrap; /* Разрешаем перенос элементов */
+        }
+
+
+
+        .nav-items {
+            display: flex;
+            gap: 2vw; /* Относительный отступ */
+            position: static; /* Убираем абсолютное позиционирование */
+            transform: none;
+            margin: 0 auto; /* Центрируем */
+        }
+
+
+        .nav-item {
+            color: #b0b0b0;
+            text-decoration: none;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 500;
+            font-size: clamp(14px, 1.7vw, 20px); /* Адаптивный размер */
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .nav-item:hover {
+            transform: scale(1.1);
+        }
+        .LOGOT {
+            position: relative; 
+            z-index: 2; /* Чтобы логотип был поверх навигации */
+        }
+        .LOGOTIP {
+            color: #b0b0b0;
+            text-decoration: none;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 800;
+            font-size: clamp(24px, 3.5vw, 40px); /* Адаптивный размер */
+            padding: 8px 15px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            white-space: nowrap; /* Запрет переноса текста */
+        }
+        .userlogo {
+            display: block; /* Делаем ссылку блочным элементом */
+            position: relative; /* Добавить это */
+            cursor: pointer;
+            /* Существующие стили остаются без изменений */
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #9a9a9a;
+            overflow: hidden;
+            margin: 0px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .userlogo:hover {
+            transform: scale(1.05);
+            
+        }
+
+        .body {
+            width: 50px;
+            height: 50px;
+            background-color: #f1f1f1;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -15px; /* Смещаем вниз */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        .head {
+            width: 30px;
+            height: 30px;
+            background-color: #f1f1f1;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px; /* Смещаем вверх */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2; /* Голова поверх тела */
+        }
+
+
+        .nav-item:hover {
+            color: #9a9a9a;
+            transform: scale(1.1);
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .filter-group {
+            margin-right: 20px;
+            display: inline-block;
+        }
+        .filter-group label {
+            margin-right: 5px;
+        }
+        input, select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 5px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    .room-button:hover .h-100 {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+    </style>
+    <title>Про сайт</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  </head>
+  <body>
+    <div class="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden" style='font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;'>
+      <div class="layout-container flex h-full grow flex-col">
+        <header class="header">
+        <nav class="nav-container">
+            
+            <div class="LOGOT">
+                <a href="/" class="LOGOTIP">AllForStudents</a>
+            </div>
+            <div class="nav-items">
+            </div>
+            <div class="nav-items">
+                <a href="#" class="nav-item">Про сайт</a>
+                <a href="#" class="nav-item">Условия проживания</a>
+                <a href="#" class="nav-item">Как забронировать?</a>
+                <a href="#" class="nav-item">Общежития</a> 
+            </div>
+            <a href="/me" class="userlogo">
+                <div class="head"></div>
+                <div class="body"></div>
+            </a>
+        </nav>
+    </header>
+        <div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <div class="@container">
+              <div class="@[480px]:p-4">
+                <div
+                  class="flex min-h-[480px] flex-col gap-6 bg-cover bg-center bg-no-repeat @[480px]:gap-8 @[480px]:rounded-lg items-center justify-center p-4"
+                  style='background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAfqoNsMyAABgOw7QkukV_kQZtjukQcBBYalyPqgMc53yNz6vD6xQ0OvaAcGzvBmQJaXYMKEri8mQI5Pum5IfFH1oJ7u2J7n-QWWV1lij3VJ6VAvCw8Q7zGRM-MG8UN39WowAtFeLJbmKt-bl2peRtGktLFjNq7wGENqn6nggxdFLKeEd-g7PRieVe3YlcZ2udhY_58OlwZjpitkLgFx6ae6A3mf1t6Y5nQcf3txLBSRmZ0_8JsqA0vmBO_iDuT-TA0DTAerL45ZA");'
+                >
+                  <div class="flex flex-col gap-2 text-center">
+                    <h1
+                      class="text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]"
+                    >
+                      Больше об AllForStudents
+                    </h1>
+                    <h2 class="text-white text-sm font-normal leading-normal @[480px]:text-base @[480px]:font-normal @[480px]:leading-normal">
+                      AllforStudents - это платформа, предназначенная для оптимизации процесса распределения жилья для учащихся, устраняя неэффективность ручного выбора комнаты. Наша система
+                      Автоматизируют процесс подбора комнат на основе предпочтений учащихся, обеспечивая прозрачный и удобный опыт как для студентов, так и для администрации.
+                    </h2>
+                  </div>
+                  <button
+                    class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#2a8fed] text-white text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]"
+                  >
+                    <span class="truncate">Нужно больше информации?</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-10 px-4 py-10 @container">
+              <div class="flex flex-col gap-4">
+                <h1
+                  class="text-[#111518] tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-[720px]"
+                >
+                  Как работает Allforstudents
+                </h1>
+                <p class="text-[#111518] text-base font-normal leading-normal max-w-[720px]">
+                    Наша платформа упрощает процесс выбора комнаты, облегчая студентам поиск своего идеального жилого пространства, а для администраторов управлять общежитиями.
+                </p>
+              </div>
+              <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-0">
+                <div class="flex flex-1 gap-3 rounded-lg border border-[#dbe1e6] bg-white p-4 flex-col">
+                  <div class="text-[#111518]" data-icon="Gear" data-size="24px" data-weight="regular">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                      <path
+                        d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <h2 class="text-[#111518] text-base font-bold leading-tight">Автоматизированное соответствие</h2>
+                    <p class="text-[#617689] text-sm font-normal leading-normal">
+                    Наш алгоритм сопостовляет потребности студента с доступными номерами на основе их предпочтений, таких как тип комнаты, местоположение и совместимость соседа по комнате.                    </p>
+                  </div>
+                </div>
+                <div class="flex flex-1 gap-3 rounded-lg border border-[#dbe1e6] bg-white p-4 flex-col">
+                  <div class="text-[#111518]" data-icon="Users" data-size="24px" data-weight="regular">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                      <path
+                        d="M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <h2 class="text-[#111518] text-base font-bold leading-tight">Удобный интерфейс</h2>
+                    <p class="text-[#617689] text-sm font-normal leading-normal">
+Интуитивно понятный интерфейс позволяет студентам легко просматривать доступные номера, выбирать комнат по предпочтеним и отправлять заявки.                    </p>
+                  </div>
+                </div>
+                <div class="flex flex-1 gap-3 rounded-lg border border-[#dbe1e6] bg-white p-4 flex-col">
+                  <div class="text-[#111518]" data-icon="ShieldCheck" data-size="24px" data-weight="regular">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                      <path
+                        d="M208,40H48A16,16,0,0,0,32,56v58.78c0,89.61,75.82,119.34,91,124.39a15.53,15.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.51-80-30.69-80-109.18V56H208ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.68l50.34-50.34a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <h2 class="text-[#111518] text-base font-bold leading-tight">Безопасно и прозрачно</h2>
+                    <p class="text-[#617689] text-sm font-normal leading-normal">
+                      Мы определяем приоритеты безопасности данных и обеспечиваем прозрачность в процессе распределения, уменьшая ручные ошибки и потенциальные смещения.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-10 px-4 py-10 @container">
+              <div class="flex flex-col gap-4">
+                <h1
+                  class="text-[#111518] tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-[720px]"
+                >
+                  Преимущества использования AllForStudents
+                </h1>
+                <p class="text-[#111518] text-base font-normal leading-normal max-w-[720px]">
+                  AllForStudents Предлагает многочисленные преимущества для студентов и университетских жилищных отделов, улучшая процесс заселения и проживания.
+                </p>
+              </div>
+              <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3">
+                <div class="flex flex-col gap-3 pb-3">
+                  <div
+                    class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD9W-5J-WBOpQJ3BcMnFuVEkdzuofS7-XMyI7BxH8u8w1XBxPYzUUnxf8PO8kqyRqtHP2RFlHelZ6KzmC5_ea31GuvPfVsJLruUZtpZZaJ8gEZ1ZI8q_cHm1UZheDcDfDdCgkLPD_Z-2Dlf6witxE1Krz8zgBQKKAF6PORv6UQ49VGmH588syAhw2TQJVe2OnY8pJ06qU0OvWnN8zUOq6JsV6OML0NieOPscJWbhUuB6lOK3CEjfKmVY_4VCcI1CND3km9iq0yOOw");'
+                  ></div>
+                  <div>
+                    <p class="text-[#111518] text-base font-medium leading-normal">Для студентов</p>
+                    <p class="text-[#617689] text-sm font-normal leading-normal">
+                      Студенты могут легко найти комнаты, которые соответствуют их предпочтениям, просматривают подробную информацию о номере, и получать своевременные уведомления об их заданиях.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-3 pb-3">
+                  <div
+                    class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAhrWFKulMMQ9ncB5dslJKNx09ihwdWlGRbs6ir2gSSjPciwcf1eqbIbEpzd4fgRSdWaOgtTNiAyZ2TIc6OLxxd6GJ7B7gcInSq9wiZ0InlWJ00isWcShVLeR5GLw5fDxfqk9yoo_1NthSosNzCADnLpnSlBAov5xqUQ--ImcdpIF_oUbF9x0LYU_ofh9ZCyXdwQ-rUZ6tdHshXXeeInrBiwQIx_jY49o9R109fRJiuHXeSzYHnr-kY8TO3WPH_CXcyEFRJNJ85Tw");'
+                  ></div>
+                  <div>
+                    <p class="text-[#111518] text-base font-medium leading-normal">For Administration</p>
+                    <p class="text-[#617689] text-sm font-normal leading-normal">
+                      Жилищные отделы могут сократить ручную рабочую нагрузку, минимизировать ошибки при распределении помещений и получить отчеты о заселенности общежитий, популярных комнатах и экспортировать в PDF.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-3 pb-3">
+                  <div
+                    class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBkOku8W466TYXd4o7QRpUXbx3SJG9MlTj6COPcvuC27oFh1QgfSnvMvW6ctjDIg3uTSzjFCiPt0cTNYcqRloSLPZCVHvSBAy-FGZddgR1j6MhxtI6SqEIIDajBnRw8CWtYu5pO4ynLPeHeSMmxAZaRnZoA58-Dr4aIO54BJzYw-5dvBF88AZAfCP8BkX1TdmT0K9Q-80JhCuIWXTeqrnxjQSIUB4cuJTI9A5W9u7ZmpkGEYO9SKEYlafoyaDmahxNvZ4g4fjWJ3A");'
+                  ></div>
+                  <div>
+                    <p class="text-[#111518] text-base font-medium leading-normal">Overall</p>
+                    <p class="text-[#617689] text-sm font-normal leading-normal">
+                        AllforStudents способствует справедливому и эффективному процессу распределения жилья, что приводит к повышению удовлетворенности учащихся и повышению административной эффективности.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer class="flex justify-center">
+          <div class="flex max-w-[960px] flex-1 flex-col">
+            <footer class="flex flex-col gap-6 px-5 py-10 text-center @container">
+              <div class="flex flex-wrap items-center justify-center gap-6 @[480px]:flex-row @[480px]:justify-around">
+                <a class="text-[#617689] text-base font-normal leading-normal min-w-40" href="#">Terms of Service</a>
+                <a class="text-[#617689] text-base font-normal leading-normal min-w-40" href="#">Privacy Policy</a>
+                <a class="text-[#617689] text-base font-normal leading-normal min-w-40" href="#">Contact Us</a>
+              </div>
+              <p class="text-[#617689] text-base font-normal leading-normal">@2024 AllForStudents. All rights reserved.</p>
+            </footer>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

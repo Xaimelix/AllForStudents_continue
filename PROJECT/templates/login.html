@@ -18,12 +18,14 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            flex-direction: column;
             justify-content: center;
             background: linear-gradient(135deg, #fffe27 0%, #da9958 100%);
             padding: 20px;
         }
 
         .login-box {
+            position: relative;
             background: white;
             border: 2px solid black;
             padding: 40px;
@@ -146,6 +148,7 @@
             color: white;
         }
 
+        /* Adjust styles for small screens like mobile devices */
         @media (max-width: 480px) {
             .login-box {
                 padding: 25px;
@@ -202,8 +205,11 @@
 
             <p>{{ form.submit(type="submit", class="basic_font") }}</p>
             <p>{{ message }}</p>
+            
         </form>
         <div id="message" class="message"></div>
+        <p style="display: flex; flex-direction: column; align-items: center; padding-top: 10%;">
+            <a style="font-weight: 600; font-size: 0.95em;" href="/registration" class="forgot-password">Нет аккаунта? Зарегистрируйтесь!</a></p>
     </div>
 
     <script>

@@ -24,36 +24,39 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 swagger = Swagger(app, template={
-    "swagger": "2.0",
-    "info": {
-        "title": "API документация",
-        "description": "Документация для всех доступных API",
-        "version": "1.0"
-    },
-    "host": "prod-team-18-lkt02gu5.hack.prodcontest.ru",
-    "basePath": "/",
-    "schemes": [
-        "http"
-    ],
-    "tags": [
-        {
-            "name": "Application Requests",
-            "description": "Операции с заявками"
+        "swagger": "2.0",
+        "info": {
+            "title": "API документация",
+            "description": "Документация д  ля всех доступных API",
+            "version": "1.0"
         },
-        {
-            "name": "Students",
-            "description": "Операции со студентами"
-        },
-        {
-            "name": "Rooms",
-            "description": "Операции с комнатами"
-        },
-        {
-            "name": "Hostels",
-            "description": "Операции с общежитиями"
-        }
-    ]
-})
+        "consumes": [
+        "application/json"
+        ],
+        # "host": f"",
+        "basePath": "/",
+        "schemes": [
+            "http"
+        ],
+        "tags": [
+            {
+                "name": "Application Requests",
+                "description": "Операции с заявками"
+            },
+            {
+                "name": "Students",
+                "description": "Операции со студентами"
+            },
+            {
+                "name": "Rooms",
+                "description": "Операции с комнатами"
+            },
+            {
+                "name": "Hostels",
+                "description": "Операции с общежитиями"
+            }
+        ]
+    })
 
 # Инициализация Flask-RESTful
 api = Api(app)
@@ -66,7 +69,7 @@ initialize_routes(api)
 # Это может быть небезопасно, если у вас есть чувствительные данные или вы хотите ограничить доступ к API.
 # Лучше использовать более строгие настройки CORS в продакшене.
 # Строка ниже решает проблему "TypeError: NetworkError when attempting to fetch resource." в Swagger UI.
-CORS(app)
+# CORS(app)
 # Если тебе нужно ограничить разрешенные источники, можно сделать так:
 # CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
 # где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
@@ -82,6 +85,10 @@ def init_db():
 def main():
     init_db()
     app.run(host="0.0.0.0", port=80)
+    # server_base_url = request.url_root
+    # if not server_base_url.endswith('/'):
+    #     server_base_url += '/'
+    
 
 
 # загрузка пользователя, прошедшего логин
@@ -100,9 +107,35 @@ def main_page():
 # страница пользователя
 @app.route('/me')
 def myself():
+    db_sess = db_session.create_session()
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
     if not current_user.is_authenticated:
         return redirect('/login')
-    return render_template('aboutuser.html', item=current_user)
+    try:
+        student_applications = db_sess.query(Application_request)\
+                                        .filter(Application_request.student_id == current_user.id)\
+                                        .all()
+        applications_data = []
+        for req in student_applications:
+            applications_data.append({
+                'id': req.id,
+                'status': req.status,
+                'date_entr': req.date_entr.strftime('%Y-%m-%d') if req.date_entr else 'Не указана',
+                'date_exit': req.date_exit.strftime('%Y-%m-%d') if req.date_exit else 'Не указана',
+                'room_id': req.room_id,
+                'student_id': req.student_id
+            })
+
+        return render_template('aboutuser.html', item=current_user, server_url=server_base_url, applications=applications_data)
+    except Exception as e:
+            # Обработка ошибок при загрузке данных
+            print(f"Ошибка при загрузке профиля студента с ID {current_user.id}: {e}")
+            return render_template('error.html', message=f"Произошла ошибка при загрузке профиля студента: {e}"), 500
+    finally:
+        # Обязательно закрываем сессию базы данных
+        db_sess.close()
 
 
 # страница общежитий
@@ -113,8 +146,54 @@ def hostel():
 
 @app.route('/rooms')
 def room():
-    return render_template('application.html')
+    return (render_template('application.html'))
 
+
+@app.route('/filter')
+def test_rooms():
+    session = db_session.create_session()
+
+    min_square = request.args.get('min_square', type=int)
+    max_square = request.args.get('max_square', type=int)
+    max_students = request.args.get('max_students', type=int)
+    sex_filter = request.args.get('sex', 'any')
+
+    query = session.query(Room)
+
+    if min_square:
+        query = query.filter(Room.square >= min_square)
+    if max_square:
+        query = query.filter(Room.square <= max_square)
+    if max_students:
+        query = query.filter(Room.max_cnt_student == max_students)
+    if sex_filter != 'any':
+        query = query.filter(Room.sex == int(sex_filter))  # Исправлено здесь
+
+    rooms = query.all()
+
+    return render_template('filter.html',
+                           rooms=rooms,
+                           current_filters=request.args)
+
+
+@app.route('/book_room/<id>', methods=['GET', 'POST'])
+def book_room(id):
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
+    db_sess = db_session.create_session()
+    if current_user.is_authenticated:
+        student = db_sess.query(Student).filter(Student.id == current_user.id).first()
+        if student:
+            return render_template('book_room.html', item=student, room_id=id, server_url=server_base_url)
+    else:
+        return redirect('/login')
+    db_sess.close()
+
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 # регистрация
 @app.route('/registration', methods=['GET', 'POST'])
@@ -170,7 +249,10 @@ def logout():
 
 @app.route('/applications')
 def applications():
-    return render_template('applications.html', user=current_user)
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
+    return render_template('applications.html', user=current_user, server_url=server_base_url)
 
 
 @app.route('/admin')

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Забронировать комнату</title>
+    <link rel="stylesheet" href="../../static/CSS/basepage.css">
+    <script>
+    window.AppConfig = {
+        roomId: {{ room_id }},
+        userId: {{ item.id }},
+        serverUrl: "{{ server_url }}"
+    };
+    </script>
+    <script src="/static/JS/book_room.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <div class="LOGOT">
+                <a href="/" class="LOGOTIP">AllForStudents</a>
+            </div>
+            <div class="nav-items">
+            </div>
+            <div class="nav-items">
+                <a href="#" class="nav-item">Про сайт</a>
+                <a href="#" class="nav-item">Условия проживания</a>
+                <a href="#" class="nav-item">Как забронировать?</a>
+                <a href="#" class="nav-item">Общежития</a> 
+            </div>
+            <a href="/me" class="userlogo">
+                <div class="head"></div>
+                <div class="body"></div>
+            </a>
+        </nav>
+    </header>
+    </div>
+    <div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
+            <h2 class="text-[#121416] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">Забронировать комнату</h2>
+            <form method="POST" action="/">
+                <div class="flex  flex-wrap items-end gap-4 px-4 py-3">
+                <label class="flex flex-col min-w-40 flex-1">
+                    <p class="text-[#121416] text-base font-medium leading-normal pb-2">ID Комнаты</p>
+                    <input
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#121416] focus:outline-0 focus:ring-0 border border-[#dde1e3] bg-white focus:border-[#dde1e3] h-14 placeholder:text-[#6a7681] p-[15px] text-base font-normal leading-normal"
+                    name="room_id" 
+                    id="room_id"
+                    value="{{ room_id }}" readonly
+                    />
+                </label>
+                </div>
+                <div class="flex flex-wrap items-end gap-4 px-4 py-3">
+                <label class="flex flex-col min-w-40 flex-1">
+                    <p class="text-[#121416] text-base font-medium leading-normal pb-2">ID пользователя</p>
+                    <input
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#121416] focus:outline-0 focus:ring-0 border border-[#dde1e3] bg-white focus:border-[#dde1e3] h-14 placeholder:text-[#6a7681] p-[15px] text-base font-normal leading-normal"
+                    name="user_id"
+                    id="user_id"
+                    value="{{ item.id }}" readonly
+                    />
+                </label>
+                </div>
+                <div class="flex px-4 py-3 justify-center">
+                    <button 
+                        class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden 
+                        rounded-xl h-10 px-4 bg-[#dce8f3] text-[#121416] text-sm font-bold leading-normal tracking-[0.015em]" 
+                        type="submit">Забронировать
+                    </button>
+                </div>
+            </form>
+            <p class="text-[#60768a] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center" style="visibility: hidden; color: green;" id="success_message"></p>
+            <p class="text-[#60768a] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center" style="visibility: hidden; color: red;" id="error_message"></p>
+          </div>
+    <!-- <div style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
+        <h1>Забронировать комнату</h1>
+        <form method="POST" action="/">
+            <label for="room_id">ID комнаты</label>
+            <input type="text" id="room_id" name="room_id" value="{{ room_id }}" readonly>
+            <br>
+            <label for="user_id">ID пользователя:</label>
+            <input type="text" id="user_id" name="user_id" value="{{ item.id }}" readonly>
+            <br>
+            <button type="submit">Забронировать</button>
+        </form> -->
+        <!-- {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        {% if success %}
+            <p style="color: green;">{{ success }}</p>
+        {% endif %}
+        <p id="error_message" style="color: red;">{{ error if error else '' }}</p>
+        <p id="success_message" style="color: green;">{{ success if success else '' }}</p> -->
+    <!-- </div> -->
+</body>
+</html>
