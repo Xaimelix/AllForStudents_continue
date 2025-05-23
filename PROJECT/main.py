@@ -149,7 +149,7 @@ def room():
     return (render_template('application.html'))
 
 
-@app.route('/filtersbutthisrooms')
+@app.route('/filter')
 def test_rooms():
     session = db_session.create_session()
 
@@ -171,7 +171,7 @@ def test_rooms():
 
     rooms = query.all()
 
-    return render_template('test_rooms.html',
+    return render_template('filter.html',
                            rooms=rooms,
                            current_filters=request.args)
 
@@ -190,6 +190,10 @@ def book_room(id):
         return redirect('/login')
     db_sess.close()
 
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 # регистрация
 @app.route('/registration', methods=['GET', 'POST'])
