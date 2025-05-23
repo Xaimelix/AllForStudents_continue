@@ -14,6 +14,8 @@ from flasgger import Swagger
 from api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource
 from api.routes import initialize_routes
 from flask_restful import Api
+from functools import wraps
+from flask import abort
 from flask_cors import CORS
 import requests
 import os
@@ -22,6 +24,25 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.admin:
+            abort(403)  # Forbidden
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html', 
+                        error="Доступ запрещен. Необходимы права администратора."), 403
+
+
+# Добавьте эту строку перед инициализацией Swagger
+# app.config['SWAGGER_URL'] = '/apidocs' # URL для Swagger UI
 
 swagger = Swagger(app, template={
         "swagger": "2.0",
@@ -58,8 +79,10 @@ swagger = Swagger(app, template={
         ]
     })
 
+
 # Инициализация Flask-RESTful
 api = Api(app)
+print(swagger.config)
 
 # Инициализация маршрутов API
 initialize_routes(api)
@@ -125,7 +148,8 @@ def myself():
                 'date_entr': req.date_entr.strftime('%Y-%m-%d') if req.date_entr else 'Не указана',
                 'date_exit': req.date_exit.strftime('%Y-%m-%d') if req.date_exit else 'Не указана',
                 'room_id': req.room_id,
-                'student_id': req.student_id
+                'student_id': req.student_id,
+                'reject_reason': req.reject_reason
             })
 
         return render_template('aboutuser.html', item=current_user, server_url=server_base_url, applications=applications_data)
@@ -212,7 +236,8 @@ def registration():
             login=form.email.data,
             name=form.name.data,
             surname=form.surname.data,
-            sex=1
+            sex=1,
+            admin=0,
         )
 
         student.set_password(form.password.data)
@@ -248,6 +273,7 @@ def logout():
 
 
 @app.route('/applications')
+@admin_required
 def applications():
     server_base_url = request.url_root
     if not server_base_url.endswith('/'):
@@ -256,13 +282,16 @@ def applications():
 
 
 @app.route('/admin')
+@admin_required
 def admin():
     return render_template('admin.html', user=current_user)
 
 
 @app.route('/admin_profile')
+@admin_required
 def admin_profile():
     return render_template('admin_profile.html', user=current_user)
+
 
 @app.route('/add', methods=['GET'])
 def add():

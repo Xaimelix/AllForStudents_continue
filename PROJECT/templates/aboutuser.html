@@ -17,7 +17,7 @@
             </div>
             <div class="userlogo">
                 <div class="head"></div>
-                <a href="/" class="what">Вернуться</a> <!-- Добавляем ссылку -->
+                <a href="/logout" class="what">Выйти</a>
             </div>
             
         </nav>
@@ -72,9 +72,15 @@
         // Передаем только ссылку на функцию save_btn_click
         profileForm.addEventListener('submit', save_btn_click);
 
+        async function init() {
+            // Получаем элемент select для курса
+            const courseSelect = document.getElementById('course');
+            // Устанавливаем текущее значение курса в select
+            courseSelect.value = "{{ item.course }}"; // Устанавливаем значение курса из контекста шаблона
+        }
+
         // Асинхронная функция, которая будет вызвана при отправке формы
         async function save_btn_click(event) {
-            // !!! ЭТО САМОЕ ГЛАВНОЕ ИСПРАВЛЕНИЕ !!!
             // Отменяем стандартное поведение формы (отправку GET запроса и перезагрузку страницы)
             event.preventDefault();
 
@@ -170,6 +176,9 @@
                 alert(`Произошла ошибка отправке запроса на изменение: ${error.message}`); // Показываем ошибку пользователю
             }
         }
+
+        // Вызываем функцию init при загрузке страницы
+        window.onload = init;
     </script>
 
                     <!-- <div class="input-group">

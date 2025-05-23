@@ -106,7 +106,7 @@ body {
 .what {
     /* Существующие стили */
     position: absolute;
-    left: 10%;
+    left: 20%;
     top: 45%;
     transform: translateY(-50%);
     margin: 0;

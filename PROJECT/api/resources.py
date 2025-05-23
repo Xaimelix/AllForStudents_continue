@@ -67,7 +67,8 @@ class ApplicationRequestsListResource(Resource):
                 type: integer
               student_id:
                 type: integer
-
+              reject_reason:
+                type: string
         """
         db_sess = create_session()
         try:
@@ -80,7 +81,8 @@ class ApplicationRequestsListResource(Resource):
                     'date_entr': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
                     'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
                     'room_id': request.room_id,
-                    'student_id': request.student_id
+                    'student_id': request.student_id,
+                    'reject_reason': request.reject_reason
                 })
             return {'requests': result}, 200
         except Exception as e:
@@ -176,6 +178,7 @@ application_put_parser.add_argument('room_id', type=int, help='ID комнаты
 application_put_parser.add_argument('student_id', type=int, help='ID студента обязателен', location=['json', 'form'])
 application_put_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)', location=['json', 'form'])
 application_put_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)', location=['json', 'form'])
+application_put_parser.add_argument('reject_reason', type=str, help='Причина отклонения', location=['json', 'form'])
 
 # --- Новый класс для операций над отдельной заявкой по ID ---
 class ApplicationRequestItemResource(Resource):
@@ -222,7 +225,8 @@ class ApplicationRequestItemResource(Resource):
                 'date_entr': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
                 'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
                 'room_id': request.room_id,
-                'student_id': request.student_id
+                'student_id': request.student_id,
+                'reject_reason': request.reject_reason
             }
             return {'request': result}, 200
 
@@ -299,6 +303,9 @@ class ApplicationRequestItemResource(Resource):
                 status:
                   type: string
                   description: Новый статус заявки ('1' для одобрения, '2' для отклонения)
+                reject_reason:
+                  type: string
+                  description: Причина отклонения (если статус '2')
               required:
                 - status
         responses:
@@ -337,6 +344,7 @@ class ApplicationRequestItemResource(Resource):
         new_student_id = args.get('student_id') # Получаем новый student_id
         new_date_entr = args.get('date_entr') # Получаем новую дату въезда
         new_date_exit = args.get('date_exit') # Получаем новую дату выезда
+        reject_reason = args.get('reject_reason') # Получаем причину отклонения
         # Проверяем, что новый статус указан
 
         if new_status is None:
@@ -366,6 +374,8 @@ class ApplicationRequestItemResource(Resource):
                 request_to_update.date_entr = datetime.strptime(new_date_entr, '%Y-%m-%d').date()
             if new_date_exit is not None:
                 request_to_update.date_exit = datetime.strptime(new_date_exit, '%Y-%m-%d').date()
+            if reject_reason is not None:
+                request_to_update.reject_reason = reject_reason
             
 
             # Коммитим изменения

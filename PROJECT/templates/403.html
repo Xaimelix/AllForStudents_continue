@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ошибка доступа</title>
+</head>
+<body>
+    <link rel="stylesheet" href="../static/CSS/aboutuser.css">
+    <style>
+        .what {
+            /* Существующие стили */
+            position: absolute;
+            left: 10%;
+            top: 45%;
+            transform: translateY(-50%);
+            margin: 0;
+            color: #f1f1f1;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 800;
+            font-size: 30px;
+            
+            /* Новые стили для ссылки */
+            text-decoration: none;
+            cursor: pointer;
+            z-index: 3; /* Чтобы ссылка была поверх других элементов */
+            padding: 15px 30px; /* Увеличиваем кликабельную область */
+        }
+    </style>
+    <header class="header">
+        <nav class="nav-container">
+            <div class="LOGOT">
+                <a href="/" class="LOGOTIP">AllForStudents</a>
+            </div>
+            <div class="nav-items">
+                <a href="#" class="nav-item">Личный Профиль</a>
+            </div>
+            <div class="userlogo">
+                <div class="head"></div>
+                <a href="/" class="what">Вернуться</a> <!-- Добавляем ссылку -->
+            </div>
+            
+        </nav>
+        
+    </header>
+    <div style="position: relative;" class="body">
+        <div style="position: relative; top: 50%; display: flex; justify-content: space-between; align-items: center; flex-direction: column;"><h1>{{ error }}</h1>
+        <a href="/">Вернуться на главную</a></div>
+    </div>
+</body>
+</html>
