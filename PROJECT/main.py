@@ -82,7 +82,6 @@ swagger = Swagger(app, template={
 
 # Инициализация Flask-RESTful
 api = Api(app)
-print(swagger.config)
 
 # Инициализация маршрутов API
 initialize_routes(api)
@@ -149,7 +148,7 @@ def myself():
                 'date_exit': req.date_exit.strftime('%Y-%m-%d') if req.date_exit else 'Не указана',
                 'room_id': req.room_id,
                 'student_id': req.student_id,
-                'reject_reason': req.reject_reason
+                'comment': req.comment
             })
 
         return render_template('aboutuser.html', item=current_user, server_url=server_base_url, applications=applications_data)

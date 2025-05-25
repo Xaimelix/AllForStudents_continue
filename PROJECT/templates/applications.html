@@ -49,6 +49,15 @@
             margin-bottom: 0; /* Убираем нижний отступ у последнего параграфа */
         }
 
+        .request-info textarea {
+            width: 50%; /* Ширина текстового поля на всю ширину родительского элемента */
+            height: 50px; /* Высота текстового поля */
+            margin-top: 5px; /* Отступ сверху от текста */
+            border-radius: 5px; /* Скругленные углы */
+            border: 1px solid #ccc; /* Рамка вокруг текстового поля */
+            padding: 5px; /* Внутренний отступ */
+        }
+
         .approve-button,
         .reject-button {
             padding: 8px 15px;
@@ -103,12 +112,11 @@
         </div>
     </nav>
     <div class="container mt-3">
-         <h2>Заявки на переселение (статус 0 - на рассмотрении, 1 - принята, 2 - отклонена)</h2>
-         <div id="applicationRequestsList"> 
-             <p>Загрузка заявок...</p> </div>
-     </div>
-
-
+        <h2>Заявки на переселение (статус 0 - на рассмотрении, 1 - принята, 2 - отклонена)</h2>
+        <div id="applicationRequestsList"> 
+            <p>Загрузка заявок...</p> </div>
+    </div>
+    
     <script>
     // URL твоего API эндпоинта для получения всех заявок
     const serverBaseUrl = "{{ server_url }}"; 
@@ -148,16 +156,15 @@
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
-                    // TODO: Добавь заголовок авторизации, если он нужен
                 }
             });
 
             console.log('Получен HTTP статус ответа:', response.status);
             if (!response.ok) {
-                 const errorText = await response.text();
-                 console.error('Ответ сервера при ошибке:', errorText);
-                 throw new Error(`Ошибка HTTP: ${response.status}`);
-             }
+                const errorText = await response.text();
+                console.error('Ответ сервера при ошибке:', errorText);
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
 
             const data = await response.json();
 
@@ -173,7 +180,7 @@
 
                 // Фильтруем заявки по статусу 0
                 const pendingRequests = data.requests.filter(request => {
-                     console.log(`Проверяем заявку ID ${request.id}: статус "${request.status}" (тип: ${typeof request.status})`);
+                    console.log(`Проверяем заявку ID ${request.id}: статус "${request.status}" (тип: ${typeof request.status})`);
                     return request.status === '0';
                 });
 
@@ -191,16 +198,23 @@
                         const requestElement = document.createElement('div');
                         requestElement.classList.add('application-request-item');
                         requestElement.dataset.requestId = request.id;
+                        requestElement.dataset.roomId = request.room_id;
+                        requestElement.dataset.studentId = request.student_id;
+                        
+
 
                         requestElement.innerHTML = `
                             <div class="request-info">
                                 <h3>Заявка #${request.id}</h3>
-                                <p>Статус: ${request.status}</p>
-                                <p>Дата въезда: ${request.date_entr || 'Не указана'}</p>
-                                <p>Дата выезда: ${request.date_exit || 'Не указана'}</p>
-                                <p>ID комнаты: ${request.room_id}</p>
-                                <p>ID студента: ${request.student_id}</p>
+                                <p data-status="${request.status}">Статус: ${request.status}</p>
+                                <p data-entr="${request.date_entr}">Дата въезда: ${request.date_entr || 'Не указана'}</p>
+                                <p data-exit="${request.date_exit}">Дата выезда: ${request.date_exit || 'Не указана'}</p>
+                                <p data-room-id="${request.room_id}">ID комнаты: ${request.room_id}</p>
+                                <p data-student-id="${request.student_id}">ID студента: ${request.student_id}</p>
+                                <h4>Коменнтарий (заполнятеся при отказе):</h4>
+                                <textarea placeholder="Все хорошо"></textarea>
                             </div>
+                                
                             <div class="request-actions">
                                 <button class="approve-button" data-request-id="${request.id}">Одобрить</button>
                                 <button class="reject-button" data-request-id="${request.id}">Отклонить</button>
@@ -226,7 +240,7 @@
             if (applicationRequestsListElement) {
                 applicationRequestsListElement.innerHTML = `<p>Произошла ошибка при загрузке или обработке заявок: ${error.message}</p>`;
             } else {
-                 console.error('Не удалось отобразить ошибку на странице, так как элемент списка не найден.');
+                console.error('Не удалось отобразить ошибку на странице, так как элемент списка не найден.');
             }
         }
     }
@@ -252,96 +266,86 @@
 
     // Функции для обработки кликов по кнопкам Одобрить/Отклонить
     async function handleApproveClick(event) {
-        const requestId = event.target.dataset.requestId; // Получаем ID заявки из атрибута data-request-id
-        console.log(`Нажата кнопка "Одобрить" для заявки ID: ${requestId}`);
+        const requestId = event.target.dataset.requestId;
+        const requestElement = event.target.closest('.application-request-item');
+        const room_id = requestElement.dataset.roomId;
+        const student_id = requestElement.dataset.studentId;
+
+        console.log(`Approve clicked. Request ID: ${requestId}, Room ID: ${room_id}`);
 
         try {
-            // Отправляем PUT запрос к API для изменения статуса заявки на "1" (одобрено)
-            console.log(`Отправка PUT запроса для одобрения заявки ID ${requestId}`); // Логгирование запроса
-            const response = await fetch(`${updateStatusApiUrl_application_requests}${requestId}`, { // Используем базовый URL + ID
+            // 1. Получаем данные комнаты
+            const getRoomResponse = await fetch(`${updateStatusApiUrl_room}${room_id}`);
+            if (!getRoomResponse.ok) {
+                throw new Error(`Ошибка получения комнаты: ${await getRoomResponse.text()}`);
+            }
+            const roomData = await getRoomResponse.json();
+
+            // 2. Получаем данные студента
+            const getStudentResponse = await fetch(`${serverBaseUrl}api/students/${student_id}`);
+            if (!getStudentResponse.ok) {
+                throw new Error(`Ошибка получения студента: ${await getStudentResponse.text()}`);
+            }
+            const studentData = await getStudentResponse.json();
+
+            // 3. Проверки
+            if (roomData['room'].cur_cnt_student >= roomData['room'].max_cnt_student) {
+                alert("Нельзя одобрить заявку: в комнате уже максимальное количество жильцов.");
+                return;
+            }
+            if (roomData['room'].sex !== studentData['student'].sex) {
+                alert(`Нельзя одобрить заявку: пол студента (${studentData.sex}) не совпадает с полом комнаты (${roomData.gender}).`);
+                return;
+            }
+
+            // 4. Обновляем статус заявки
+            const approveResponse = await fetch(`${updateStatusApiUrl_application_requests}${requestId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json' // Указываем, что отправляем JSON
-                    // TODO: Добавь заголовок авторизации, если он нужен
-                },
-                body: JSON.stringify({ status: '1' }) // Отправляем JSON с новым статусом '1'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: '1' })
             });
-
-            console.log(`Получен ответ на PUT запрос для одобрения заявки ID ${requestId}. Статус: ${response.status}`); // Логгирование ответа
-
-            // Проверяем, успешен ли был запрос
-            if (response.ok) {
-                console.log(`Заявка ${requestId} одобрена.`);
-                // Обновить интерфейс: удалить этот блок заявки с страницы
-                const requestElement = event.target.closest('.application-request-item'); // Находим родительский элемент заявки
-                if (requestElement) {
-                    requestElement.remove(); // Удаляем элемент
-                }
-                alert(`Заявка ${requestId} одобрена.`); // Оповещение пользователя
-            } else {
-                // Получаем сообщение об ошибке от сервера, если оно есть в формате JSON
-                const errorData = await response.json();
-                const errorMessage = errorData.message || `Ошибка HTTP: ${response.status}`;
-                console.error(`Ошибка при одобрении заявки ${requestId}: ${errorMessage}`);
-                alert(`Не удалось одобрить заявку ${requestId}. ${errorMessage}`); // Показываем ошибку пользователю
+            if (!approveResponse.ok) {
+                throw new Error(`Ошибка при обновлении статуса: ${await approveResponse.text()}`);
             }
 
-            } catch (error) {
-                console.error('Ошибка при выполнении запроса на одобрение:', error);
-                alert(`Произошла ошибка при одобрении заявки ${requestId}: ${error.message}`); // Показываем ошибку пользователю
-            }
-            
-        try {
-            // Отправляем PUT запрос к API для изменения статуса заявки на "1" (одобрено)
-            console.log(`Отправка PUT запроса для изменения комнаты (уеличение количества жильцов) ID ${requestId}`); // Логгирование запроса
-            const response = await fetch(`${updateStatusApiUrl_application_requests}${requestId}`, { // Используем базовый URL + ID
+            // 5. Увеличиваем количество жильцов
+            const updateRoomResponse = await fetch(`${updateStatusApiUrl_room}${room_id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json' // Указываем, что отправляем JSON
-                    // TODO: Добавь заголовок авторизации, если он нужен
-                },
-                body: JSON.stringify({ status: '1' }) // Отправляем JSON с новым статусом '1'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cur_cnt_student: Number(roomData['room'].cur_cnt_student) + 1
+                })
             });
-
-            console.log(`Получен ответ на PUT запрос для одобрения заявки ID ${requestId}. Статус: ${response.status}`); // Логгирование ответа
-
-            // Проверяем, успешен ли был запрос
-            if (response.ok) {
-                console.log(`Изменение комнаты успешно requestId: ${requestId}.`);
-                // Обновить интерфейс: удалить этот блок заявки с страницы
-                const requestElement = event.target.closest('.application-request-item'); // Находим родительский элемент заявки
-                if (requestElement) {
-                    requestElement.remove(); // Удаляем элемент
-                }
-                alert(`Изменение комнаты успешно requestId: ${requestId}.`); // Оповещение пользователя
-            } else {
-                // Получаем сообщение об ошибке от сервера, если оно есть в формате JSON
-                const errorData = await response.json();
-                const errorMessage = errorData.message || `Ошибка HTTP: ${response.status}`;
-                console.error(`Ошибка при изменении ${requestId}: ${errorMessage}`);
-                alert(`Не удалось изменить комнату ${requestId}. ${errorMessage}`); // Показываем ошибку пользователю
+            if (!updateRoomResponse.ok) {
+                throw new Error(`Ошибка при обновлении комнаты: ${await updateRoomResponse.text()}`);
             }
 
-            } catch (error) {
-                console.error('Ошибка при выполнении запроса на изменение комнаты:', error);
-                alert(`Произошла ошибка при изменении ${requestId}: ${error.message}`); // Показываем ошибку пользователю
-            }
+            requestElement.remove();
+            alert(`Заявка ${requestId} одобрена и жильцы обновлены.`);
+        } catch (error) {
+            console.error(error);
+            alert(`Ошибка обработки заявки: ${error.message}`);
+        }
     }
 
     async function handleRejectClick(event) {
         const requestId = event.target.dataset.requestId; // Получаем ID заявки из атрибута data-request-id
         console.log(`Нажата кнопка "Отклонить" для заявки ID: ${requestId}`);
-
-         try {
+        const comment_admin = event.target.closest('.application-request-item').querySelector('textarea').value; // Получаем комментарий из текстового поля
+        if (comment_admin.trim() === '') { // Проверяем, что комментарий не пустой
+            alert('Пожалуйста, введите комментарий перед отклонением заявки.');
+            return; // Прекращаем выполнение функции, если комментарий пустой
+        }
+        console.log(`Комментарий администратора: ${comment_admin}`); // Логгируем комментарий
+        try {
             // Отправляем PUT запрос к API для изменения статуса заявки на "2" (отклонено)
             console.log(`Отправка PUT запроса для отклонения заявки ID ${requestId}`); // Логгирование запроса
-            const response = await fetch(`${updateStatusApiUrl_room}${requestId}`, { // Используем базовый URL + ID
+            const response = await fetch(`${updateStatusApiUrl_application_requests}${requestId}`, { // Используем базовый URL + ID
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json' // Указываем, что отправляем JSON
-                    // TODO: Добавь заголовок авторизации, если он нужен
                 },
-                body: JSON.stringify({ status: '2' }) // Отправляем JSON с новым статусом '2'
+                body: JSON.stringify({ status: '2', comment: comment_admin }) // Отправляем JSON с новым статусом '2'
             });
 
             console.log(`Получен ответ на PUT запрос для отклонения заявки ID ${requestId}. Статус: ${response.status}`); // Логгирование ответа

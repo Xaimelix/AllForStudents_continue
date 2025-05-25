@@ -67,7 +67,7 @@ class ApplicationRequestsListResource(Resource):
                 type: integer
               student_id:
                 type: integer
-              reject_reason:
+              comment:
                 type: string
         """
         db_sess = create_session()
@@ -82,7 +82,7 @@ class ApplicationRequestsListResource(Resource):
                     'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
                     'room_id': request.room_id,
                     'student_id': request.student_id,
-                    'reject_reason': request.reject_reason
+                    'comment': request.comment
                 })
             return {'requests': result}, 200
         except Exception as e:
@@ -178,7 +178,7 @@ application_put_parser.add_argument('room_id', type=int, help='ID комнаты
 application_put_parser.add_argument('student_id', type=int, help='ID студента обязателен', location=['json', 'form'])
 application_put_parser.add_argument('date_entr', type=str, help='Дата въезда (YYYY-MM-DD)', location=['json', 'form'])
 application_put_parser.add_argument('date_exit', type=str, help='Дата выезда (YYYY-MM-DD)', location=['json', 'form'])
-application_put_parser.add_argument('reject_reason', type=str, help='Причина отклонения', location=['json', 'form'])
+application_put_parser.add_argument('comment', type=str, help='Причина отклонения', location=['json', 'form'])
 
 # --- Новый класс для операций над отдельной заявкой по ID ---
 class ApplicationRequestItemResource(Resource):
@@ -226,7 +226,7 @@ class ApplicationRequestItemResource(Resource):
                 'date_exit': request.date_exit.strftime('%Y-%m-%d') if request.date_exit else None,
                 'room_id': request.room_id,
                 'student_id': request.student_id,
-                'reject_reason': request.reject_reason
+                'comment': request.comment
             }
             return {'request': result}, 200
 
@@ -303,7 +303,7 @@ class ApplicationRequestItemResource(Resource):
                 status:
                   type: string
                   description: Новый статус заявки ('1' для одобрения, '2' для отклонения)
-                reject_reason:
+                comment:
                   type: string
                   description: Причина отклонения (если статус '2')
               required:
@@ -344,7 +344,7 @@ class ApplicationRequestItemResource(Resource):
         new_student_id = args.get('student_id') # Получаем новый student_id
         new_date_entr = args.get('date_entr') # Получаем новую дату въезда
         new_date_exit = args.get('date_exit') # Получаем новую дату выезда
-        reject_reason = args.get('reject_reason') # Получаем причину отклонения
+        comment = args.get('comment') # Получаем причину отклонения
         # Проверяем, что новый статус указан
 
         if new_status is None:
@@ -374,8 +374,8 @@ class ApplicationRequestItemResource(Resource):
                 request_to_update.date_entr = datetime.strptime(new_date_entr, '%Y-%m-%d').date()
             if new_date_exit is not None:
                 request_to_update.date_exit = datetime.strptime(new_date_exit, '%Y-%m-%d').date()
-            if reject_reason is not None:
-                request_to_update.reject_reason = reject_reason
+            if comment is not None:
+                request_to_update.comment = comment
             
 
             # Коммитим изменения
@@ -979,6 +979,16 @@ class RoomListResource(Resource):
         finally:
             db_sess.close()
 
+room_item_parser = reqparse.RequestParser()
+# Указываем location='json' для всех полей, которые можно обновлять
+room_item_parser.add_argument('hostel_id', type=int, required=False, help='Номер общежития обязателен', location=['form', 'json'])
+room_item_parser.add_argument('square', type=float, required=False, help='Площадь комнаты обязательна', location=['form', 'json'])
+room_item_parser.add_argument('max_cnt_student', type=int, required=False, help='Максимальное количество студентов в комнате обязательно', location=['form', 'json'])
+room_item_parser.add_argument('cur_cnt_student', type=int, required=False, help='Текущее количество студентов в комнате обязательно', location=['form', 'json'])
+room_item_parser.add_argument('floor', type=int, required=False, help='Этаж комнаты обязателен', location=['form', 'json'])
+room_item_parser.add_argument('sex', type=bool, required=False, help='Пол комнаты (True - мужская, False - женская) обязателен', location=['form', 'json'])
+room_item_parser.add_argument('side', type=str, required=False, help='Сторона комнаты (например, "s - south", "n - north") обязательна', location=['form', 'json'])
+
 
 # --- Новый класс для операций над отдельной комнатой по ID ---
 class RoomItemResource(Resource):
@@ -1101,7 +1111,7 @@ class RoomItemResource(Resource):
                 message:
                   type: string
         """
-        args = room_parser.parse_args()
+        args = room_item_parser.parse_args()
         db_sess = create_session()
         try:
             # Ищем комнату по ID
