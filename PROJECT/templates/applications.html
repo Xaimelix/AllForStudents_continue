@@ -7,7 +7,6 @@
           integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <link rel="shortcut icon" href="static/icon.png" type="image/x-icon">
     <link href="/static/styles.css" rel="stylesheet" type="text/css"></link>
-    <link href="/static/login.css" rel="stylesheet" type="text/css"></link>
     <style>
         #applicationRequestsList {
             margin-top: 20px; /* Пример верхнего отступа */
@@ -19,10 +18,9 @@
             margin-bottom: 15px; /* Отступ между блоками заявок */
             border-radius: 8px; /* Скругленные углы */
             background-color: #f9f9f9; /* Легкий фон */
-
             display: flex; /* Включаем Flexbox для расположения дочерних элементов */
-            justify-content: space-between; /* Распределяем пространство между элементами */
-            align-items: center; /* Выравниваем элементы по центру вертикали */
+            justify-content: space-around; /* Распределяем пространство между элементами */
+            align-items: baseline;
         }
 
         .request-info {
@@ -118,11 +116,11 @@
     </div>
     
     <script>
-    // URL твоего API эндпоинта для получения всех заявок
+    // URL API эндпоинта для получения всех заявок
     const serverBaseUrl = "{{ server_url }}"; 
     const apiUrl = `${serverBaseUrl}api/application_requests`; // URL для получения всех заявок
     
-    // URL твоего API эндпоинта для обновления статуса заявки (PUT запрос по ID)
+    // URL API эндпоинта для обновления статуса заявки (PUT запрос по ID)
     // Он должен соответствовать маршруту ApplicationRequestItemResource: /api/application_requests/<int:request_id>
     const updateStatusApiUrl_application_requests = `${serverBaseUrl}api/application_requests/`; // Базовый URL, к которому добавим ID заявки
     const updateStatusApiUrl_room = `${serverBaseUrl}api/rooms/`; // Базовый URL для изменения комнаты, к которому добавим ID заявки
@@ -130,118 +128,88 @@
 
     // Функция для получения и отображения заявок со статусом 0
     async function fetchAndDisplayPendingApplicationRequests() {
-        // Ищем элемент списка ВНУТРИ функции
         const applicationRequestsListElement = document.getElementById('applicationRequestsList');
-
-        // Проверяем, найден ли элемент. Если нет, выводим ошибку и останавливаемся.
         if (!applicationRequestsListElement) {
             console.error("HTML элемент с ID 'applicationRequestsList' не найден на странице!");
-            const body = document.querySelector('body');
-            if (body) {
-                const errorDiv = document.createElement('div');
-                errorDiv.style.color = 'red';
-                errorDiv.textContent = "Ошибка загрузки: элемент для списка заявок не найден!";
-                body.prepend(errorDiv);
-            }
-            return; // Прекращаем выполнение функции
+            return;
         }
 
-        // Очищаем текущее содержимое элемента списка и ставим сообщение о загрузке
         applicationRequestsListElement.innerHTML = '<p>Загрузка заявок...</p>';
 
-
         try {
-            console.log(`Выполняется GET запрос к: ${apiUrl}`);
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-
-            console.log('Получен HTTP статус ответа:', response.status);
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Ответ сервера при ошибке:', errorText);
-                throw new Error(`Ошибка HTTP: ${response.status}`);
-            }
-
+            const response = await fetch(apiUrl, { method: 'GET', headers: { 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
             const data = await response.json();
 
-            console.log('Данные получены от API:', data);
-            console.log('Тип data:', typeof data);
+            const pendingRequests = Array.isArray(data.requests)
+                ? data.requests.filter(r => r.status === '0')
+                : [];
 
+            applicationRequestsListElement.innerHTML = pendingRequests.length
+                ? ''
+                : '<p>Нет заявок на переселение в статусе "0".</p>';
 
-            if (data && typeof data === 'object' && Array.isArray(data.requests)) {
-                applicationRequestsListElement.innerHTML = ''; // Очищаем сообщение о загрузке
+            for (const request of pendingRequests) {
+                const requestElement = document.createElement('div');
+                requestElement.classList.add('application-request-item');
+                requestElement.dataset.requestId = request.id;
+                requestElement.dataset.roomId = request.room_id;
+                requestElement.dataset.studentId = request.student_id;
 
-                console.log('Исходный список заявок (data.requests):', data.requests);
-
-
-                // Фильтруем заявки по статусу 0
-                const pendingRequests = data.requests.filter(request => {
-                    console.log(`Проверяем заявку ID ${request.id}: статус "${request.status}" (тип: ${typeof request.status})`);
-                    return request.status === '0';
-                });
-
-
-                console.log('Отфильтрованный список заявок (pendingRequests):', pendingRequests);
-
-
-                if (pendingRequests.length === 0) {
-                    applicationRequestsListElement.innerHTML = '<p>Нет заявок на переселение в статусе "0".</p>';
-                } else {
-                    // Перебираем отфильтрованные заявки и создаем HTML для их отображения
-                    pendingRequests.forEach(request => {
-                        console.log('Генерируем HTML для заявки ID:', request.id);
-
-                        const requestElement = document.createElement('div');
-                        requestElement.classList.add('application-request-item');
-                        requestElement.dataset.requestId = request.id;
-                        requestElement.dataset.roomId = request.room_id;
-                        requestElement.dataset.studentId = request.student_id;
-                        
-
-
-                        requestElement.innerHTML = `
-                            <div class="request-info">
-                                <h3>Заявка #${request.id}</h3>
-                                <p data-status="${request.status}">Статус: ${request.status}</p>
-                                <p data-entr="${request.date_entr}">Дата въезда: ${request.date_entr || 'Не указана'}</p>
-                                <p data-exit="${request.date_exit}">Дата выезда: ${request.date_exit || 'Не указана'}</p>
-                                <p data-room-id="${request.room_id}">ID комнаты: ${request.room_id}</p>
-                                <p data-student-id="${request.student_id}">ID студента: ${request.student_id}</p>
-                                <h4>Коменнтарий (заполнятеся при отказе):</h4>
-                                <textarea placeholder="Все хорошо"></textarea>
-                            </div>
-                                
-                            <div class="request-actions">
-                                <button class="approve-button" data-request-id="${request.id}">Одобрить</button>
-                                <button class="reject-button" data-request-id="${request.id}">Отклонить</button>
-                            </div>
-                        `;
-
-                        applicationRequestsListElement.appendChild(requestElement);
-                    });
-
-                    // Добавляем слушателей событий для кнопок после того, как все заявки добавлены
-                    // ПЕРЕДАЕМ applicationRequestsListElement КАК АРГУМЕНТ
-                    attachButtonListeners(applicationRequestsListElement);
-
+                // Получаем асинхронно данные
+                let roomData = {};
+                let studentData = {};
+                try {
+                    [roomData, studentData] = await Promise.all([
+                        fetch(`${updateStatusApiUrl_room}${request.room_id}`).then(res => res.ok ? res.json() : {}),
+                        fetch(`${serverBaseUrl}api/students/${request.student_id}`).then(res => res.ok ? res.json() : {})
+                    ]);
+                } catch (fetchErr) {
+                    console.error('Ошибка получения доп. данных:', fetchErr);
                 }
 
-            } else {
-                console.error('Неверный формат данных от API:', data);
-                applicationRequestsListElement.innerHTML = '<p>Не удалось загрузить данные заявок из-за ошибки формата.</p>';
+                let room = roomData['room'] || {};
+                let student = studentData['student'] || {};
+                requestElement.innerHTML = `
+                    <div class="request-info" style="max-width: 30%;">
+                        <h4>Заявка</h4>
+                        <p><strong>ID:</strong> ${request.id}</p>
+                        <p><strong>Статус:</strong> ${request.status}</p>
+                        <p><strong>Дата въезда:</strong> ${request.date_entr || 'Не указана'}</p>
+                        <p><strong>Дата выезда:</strong> ${request.date_exit || 'Не указана'}</p>
+                        <p><strong>Комментарий:</strong></p>
+                        <textarea placeholder="Все хорошо"></textarea>
+                    </div>
+                    <div class="student-info" style="max-width: 30%;">
+                        <h4>Студент</h4>
+                        <p><strong>ID:</strong> ${request.student_id}</p>
+                        <p><strong>Имя:</strong> ${student.name || 'Не указано'}</p>
+                        <p><strong>Фамилия:</strong> ${student.surname || 'Не указано'}</p>
+                        <p><strong>Пол:</strong> ${student.sex || 'Не указан'}</p>
+                        <p><strong>Курс:</strong> ${student.course || 'Не указан'}</p>
+                    </div>
+                    <div class="room-info" style="max-width: 30%;">
+                        <h4>Комната</h4>
+                        <p><strong>ID:</strong> ${request.room_id}</p>
+                        <p><strong>Макс. жильцов:</strong> ${room.max_cnt_student || 'Не указано'}</p>
+                        <p><strong>Тек. жильцов:</strong> ${room.cur_cnt_student || 'Не указано'}</p>
+                        <p><strong>Пол:</strong> ${room.sex || 'Не указан'}</p>
+                        <p><strong>Этаж:</strong> ${room.floor || 'Не указан'}</p>
+                    </div>
+                    <div class="request-actions">
+                        <button class="approve-button" data-request-id="${request.id}">Одобрить</button>
+                        <button class="reject-button" data-request-id="${request.id}">Отклонить</button>
+                    </div>
+                `;
+
+                applicationRequestsListElement.appendChild(requestElement);
             }
 
+            attachButtonListeners(applicationRequestsListElement);
+
         } catch (error) {
-            console.error('Ошибка при получении или обработке заявок:', error);
-            if (applicationRequestsListElement) {
-                applicationRequestsListElement.innerHTML = `<p>Произошла ошибка при загрузке или обработке заявок: ${error.message}</p>`;
-            } else {
-                console.error('Не удалось отобразить ошибку на странице, так как элемент списка не найден.');
-            }
+            console.error('Ошибка при загрузке заявок:', error);
+            applicationRequestsListElement.innerHTML = `<p>Ошибка: ${error.message}</p>`;
         }
     }
 
