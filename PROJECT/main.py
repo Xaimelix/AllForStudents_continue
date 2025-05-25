@@ -199,19 +199,31 @@ def test_rooms():
                            current_filters=request.args)
 
 
-@app.route('/book_room/<id>', methods=['GET', 'POST'])
+@app.route('/book_room/<int:id>', methods=['GET', 'POST'])
 def book_room(id):
-    server_base_url = request.url_root
-    if not server_base_url.endswith('/'):
-        server_base_url += '/'
     db_sess = db_session.create_session()
-    if current_user.is_authenticated:
-        student = db_sess.query(Student).filter(Student.id == current_user.id).first()
-        if student:
-            return render_template('book_room.html', item=student, room_id=id, server_url=server_base_url)
-    else:
+
+    if not current_user.is_authenticated:
         return redirect('/login')
-    db_sess.close()
+
+    # Получаем информацию о комнате
+    room = db_sess.query(Room).get(id)
+    if not room:
+        abort(404)
+
+    # Получаем информацию о студенте
+    student = db_sess.query(Student).get(current_user.id)
+    if not student:
+        abort(403)
+
+    # Формируем базовый URL сервера
+    server_base_url = request.url_root.rstrip('/') + '/'
+
+    return render_template('book_room.html',
+                           room=room,
+                           item=student,
+                           room_id=room.id,
+                           server_url=server_base_url)
 
 
 @app.route('/about')
