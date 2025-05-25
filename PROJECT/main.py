@@ -41,7 +41,7 @@ def forbidden(e):
                         error="Доступ запрещен. Необходимы права администратора."), 403
 
 
-# Добавьте эту строку перед инициализацией Swagger
+    # Добавьте эту строку перед инициализацией Swagger
 # app.config['SWAGGER_URL'] = '/apidocs' # URL для Swagger UI
 
 swagger = Swagger(app, template={
@@ -167,12 +167,12 @@ def hostel():
     return render_template('finding.html')
 
 
-@app.route('/rooms')
+@app.route('/filter')
 def room():
     return (render_template('application.html'))
 
 
-@app.route('/filter')
+@app.route('/rooms')
 def test_rooms():
     session = db_session.create_session()
 
