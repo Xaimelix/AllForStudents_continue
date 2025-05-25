@@ -108,10 +108,10 @@ window.onload = function() {
             // Вызываем нашу функцию для отправки данных
             // Можно использовать room_id_js и user_id_js, если поля формы не предназначены для редактирования
             const result = await submitBooking(parseInt(currentRoomId), parseInt(currentUserId));
-
             if (result.success) {
                 // Действия при успехе (например, можно очистить форму или перенаправить)
                 console.log("Бронирование успешно:", result.data);
+                window.location.href = '/me';
                 // bookingForm.reset(); // Очистить форму
             } else {
                 // Действия при ошибке (сообщение уже отображено в submitBooking)

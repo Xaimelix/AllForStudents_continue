@@ -117,9 +117,9 @@
             <!-- Левая колонка с каруселью -->
             <div class="w-2/3">
                 <div class="carousel-container">
-                    <img src="https://via.placeholder.com/600x400?text=Room+1" class="carousel-image active" alt="Room photo">
-                    <img src="https://via.placeholder.com/600x400?text=Room+2" class="carousel-image" alt="Room photo">
-                    <img src="https://via.placeholder.com/600x400?text=Room+3" class="carousel-image" alt="Room photo">
+                    <img src="../static/images/Rooms/{{ room.id }}/main.JPG" class="carousel-image active" alt="main room" onerror="this.onerror=null;this.src='../static/images/Error_images/not_found_image.png'">
+                    <img src="../static/images/Rooms/{{ room.id }}/bathroom.JPG" class="carousel-image" alt="bathroom" onerror="this.onerror=null;this.src='../static/images/Error_images/not_found_image.png'">
+                    <img src="../static/images/Rooms/{{ room.id }}/kitchen.JPG" class="carousel-image" alt="kitchen" onerror="this.onerror=null;this.src='../static/images/Error_images/not_found_image.png'">
 
                     <button class="carousel-button prev">❮</button>
                     <button class="carousel-button next">❯</button>
