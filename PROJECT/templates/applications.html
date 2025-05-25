@@ -172,7 +172,7 @@
                 let student = studentData['student'] || {};
                 requestElement.innerHTML = `
                     <div class="request-info" style="max-width: 30%;">
-                        <h4>Заявка</h4>
+                        <h4>Заявка № ${request.id}</h4>
                         <p><strong>ID:</strong> ${request.id}</p>
                         <p><strong>Статус:</strong> ${request.status}</p>
                         <p><strong>Дата въезда:</strong> ${request.date_entr || 'Не указана'}</p>

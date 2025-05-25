@@ -243,6 +243,7 @@
                             <p><strong>Дата въезда:</strong> {{ app.date_entr if app.date_entr is not none else 'Не указана' }}</p>
                             <p><strong>Дата выезда:</strong> {{ app.date_exit if app.date_exit is not none else 'Не указана' }}</p>
                             <p><strong>Комната ID:</strong> {{ app.room_id }}</p>
+                            <textarea class="form-control" rows="3" readonly>{{ app.comment if app.comment else 'Комментарий отсутствует' }}</textarea>
                         </div>
                 {% endfor %}
                 </div>
