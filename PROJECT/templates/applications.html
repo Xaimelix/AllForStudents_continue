@@ -87,7 +87,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Admin Panel</a>
+            <a class="navbar-brand" href="/admin">Панель администратора</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -104,6 +104,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/admin_profile">Профиль</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin_support_reply">Поддержка — ответы</a>
                     </li>
                 </ul>
             </div>
@@ -195,6 +198,7 @@
                         <p><strong>Тек. жильцов:</strong> ${room.cur_cnt_student || 'Не указано'}</p>
                         <p><strong>Пол:</strong> ${room.sex || 'Не указан'}</p>
                         <p><strong>Этаж:</strong> ${room.floor || 'Не указан'}</p>
+                        <p><strong>Корпус ID общежития:</strong> ${room.hostel_id || 'Не указан'}</p>
                     </div>
                     <div class="request-actions">
                         <button class="approve-button" data-request-id="${request.id}">Одобрить</button>

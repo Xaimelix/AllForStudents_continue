@@ -19,9 +19,12 @@ from flask import abort
 from flask_cors import CORS
 import requests
 import os
+from dotenv import load_dotenv
+from data.help_requests import HelpRequests
 
+load_dotenv('config.env')  # загружаем переменные из .env
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'pfybvfqntcmcgjhnfvvfkmxbrbbltdjxrb'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -86,16 +89,6 @@ api = Api(app)
 # Инициализация маршрутов API
 initialize_routes(api)
 
-# !!! ДОБАВЬ ЭТУ СТРОКУ ДЛЯ ВКЛЮЧЕНИЯ CORS !!!
-# Разрешить CORS для всех маршрутов и всех источников
-# Это может быть небезопасно, если у вас есть чувствительные данные или вы хотите ограничить доступ к API.
-# Лучше использовать более строгие настройки CORS в продакшене.
-# Строка ниже решает проблему "TypeError: NetworkError when attempting to fetch resource." в Swagger UI.
-# CORS(app)
-# Если тебе нужно ограничить разрешенные источники, можно сделать так:
-# CORS(app, resources={r"/api/*": {"origins": "http://localhost:твоего_порта_с_swagger"}})
-# где "твоего_порта_с_swagger" - это порт, на котором открывается интерфейс Swagger UI в браузере.
-
 def init_db():
     # Используйте относительный путь от корня проекта
     db_path = os.path.join(os.path.dirname(__file__), "db/database.db")
@@ -110,7 +103,7 @@ def main():
     # server_base_url = request.url_root
     # if not server_base_url.endswith('/'):
     #     server_base_url += '/'
-    
+
 
 
 # загрузка пользователя, прошедшего логин
@@ -302,6 +295,24 @@ def admin():
 @admin_required
 def admin_profile():
     return render_template('admin_profile.html', user=current_user)
+
+
+@admin_required
+@app.route('/admin_support_reply', methods=['GET', 'POST'])
+def admin_support_reply():
+    db_sess = db_session.create_session()
+    if request.method == 'POST':
+        req_id = request.form.get('request_id')
+        reply_text = request.form.get('reply_text')
+        help_request = db_sess.query(HelpRequests).get(int(req_id))
+        if help_request and help_request.status == 'open':
+            help_request.reply = reply_text
+            help_request.status = 'closed'
+            db_sess.commit()
+    # Получаем все открытые запросы
+    open_requests = db_sess.query(HelpRequests).filter(HelpRequests.status == 'open').all()
+    db_sess.close()
+    return render_template('admin_support_reply.html', user=current_user, requests=open_requests)
 
 
 @app.route('/add', methods=['GET'])
