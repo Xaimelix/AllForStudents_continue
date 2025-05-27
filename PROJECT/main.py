@@ -315,6 +315,39 @@ def admin_support_reply():
     return render_template('admin_support_reply.html', user=current_user, requests=open_requests)
 
 
+@app.route('/help', methods=['GET', 'POST'])
+def help_page():
+    return render_template('help_page.html')
+
+
+@login_required
+@app.route('/start', methods=['GET', 'POST'])
+def starter_page():
+    """
+    Стартовая страница приложения. Выбор пользователем как отправить заявку на общежитие (автоматическое распределение или фильтровать)
+    """
+    return render_template('starter.html', user=current_user)
+
+
+@login_required
+@app.route('/auto')
+def auto():
+    db_sess = db_session.create_session()
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
+    rooms = db_sess.query(Room).filter(Room.cur_cnt_student < Room.max_cnt_student, Room.sex == current_user.sex).all()
+    print(rooms)
+    return redirect('/me')
+
+
+def how_to_apply():
+    """
+    Страница с инструкцией по подаче заявки на общежитие
+    """
+    return render_template('how_to.html')
+
+
 @app.route('/add', methods=['GET'])
 def add():
     """
