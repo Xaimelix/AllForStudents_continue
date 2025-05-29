@@ -7,6 +7,7 @@
       onload="this.rel='stylesheet'"
       href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
     />
+    <link rel="stylesheet" href="../static/CSS/basepage.css">
 
     <title>Stitch Design</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
@@ -14,6 +15,26 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   </head>
   <body>
+    <header class="header">
+        <nav class="nav-container">
+            
+            <div class="LOGOT">
+                <a href="/" class="LOGOTIP">AllForStudents</a>
+            </div>
+            <div class="nav-items">
+            </div>
+            <div class="nav-items">
+                <a href="/about" class="nav-item">Про сайт</a>
+                <a href="#" class="nav-item">Как забронировать?</a>
+                <a href="#" class="nav-item">Общежития</a> 
+                <a href="/help" class="nav-item">Помощь</a>
+            </div>
+            <a href="/me" class="userlogo">
+                <div class="head"></div>
+                <div class="body"></div>
+            </a>
+        </nav>
+    </header>
         <div class="px-40 flex flex-1 justify-center py-5">
           <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
             <div class="@container">
@@ -22,15 +43,14 @@
                   class="bg-cover bg-center flex flex-col justify-end overflow-hidden bg-white @[480px]:rounded-xl min-h-[218px]"
                   style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 25%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuDFCUw9oCtTdNuZ7XlrLbzWzl-_MzCEDQbOglTVsEI7tAa7yNqrHqxPTE__GUSpKbn4pn2zcArxYA9dO3moa3fC3NVZ9yGY4ubwoMuiVDEyFwhnLya-7uIKYNc1cT5K5vAH73hZD52GLmElV3yc4SZ_4JzbSYy94p3jBmL5bpZKuTclwzkEy_WfpJZt4fYotShh5Ku70s26OPVa-3Bl2ULtMSrWdcL_nhtgOeMDRW3asmYSAWZJa53k2OP4biFGeYidiiqkbFnrlbXR");'
                 >
-                  <div class="flex p-4"><p class="text-white tracking-light text-[28px] font-bold leading-tight">How to Apply</p></div>
+                  <div class="flex p-4"><p class="text-white tracking-light text-[28px] font-bold leading-tight">Как заселелиться</p></div>
                 </div>
               </div>
             </div>
             <p class="text-[#171512] text-base font-normal leading-normal pb-3 pt-1 px-4">
-              Applying for a room in our student dormitory is a straightforward process designed to help you find the perfect living space. Follow these steps to ensure a smooth
-              application experience.
+              Подача заявки на заселение на платформе - это простой процесс, предназначенный для того, чтобы помочь вам найти идеальную комнату. Следуйте этим шагам, чтобы заселелится максимально быстро и эффективно.
             </p>
-            <h2 class="text-[#171512] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Application Process</h2>
+            <h2 class="text-[#171512] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Процесс подачи заявки</h2>
             <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
               <div class="flex flex-1 gap-3 rounded-lg border border-[#e4e2dd] bg-white p-4 items-center">
                 <div class="text-[#171512]" data-icon="User" data-size="24px" data-weight="regular">
@@ -40,7 +60,7 @@
                     ></path>
                   </svg>
                 </div>
-                <h2 class="text-[#171512] text-base font-bold leading-tight">Register Your Account</h2>
+                <h2 class="text-[#171512] text-base font-bold leading-tight">Зарегистрируйте свою учетную запись</h2>
               </div>
               <div class="flex flex-1 gap-3 rounded-lg border border-[#e4e2dd] bg-white p-4 items-center">
                 <div class="text-[#171512]" data-icon="Bed" data-size="24px" data-weight="regular">
@@ -50,7 +70,7 @@
                     ></path>
                   </svg>
                 </div>
-                <h2 class="text-[#171512] text-base font-bold leading-tight">Select and Request a Room</h2>
+                <h2 class="text-[#171512] text-base font-bold leading-tight">Выберите комнату и пойдайте заявку на заселение</h2>
               </div>
               <div class="flex flex-1 gap-3 rounded-lg border border-[#e4e2dd] bg-white p-4 items-center">
                 <div class="text-[#171512]" data-icon="Check" data-size="24px" data-weight="regular">
@@ -58,13 +78,14 @@
                     <path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"></path>
                   </svg>
                 </div>
-                <h2 class="text-[#171512] text-base font-bold leading-tight">Approval and Profile Check</h2>
+                <h2 class="text-[#171512] text-base font-bold leading-tight">После одобрения заявки заселяйтесь</h2>
               </div>
             </div>
+            
+            <h2 class="text-[#171512] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Более детально</h2>
             <p class="text-[#171512] text-base font-normal leading-normal pb-3 pt-1 px-4">
-              To begin, create an account on our platform. Provide accurate personal information and verify your student status. Once registered, you can explore available rooms
-              and submit your application. Our administrators will review your request and notify you of the approval status. Finally, ensure your profile is complete and
-              up-to-date for a seamless experience.
+              Для начала создайте учетную запись на нашей платформе. После регистрации перейдите в профиль. Предоставьте точную информацию и проверьте все поля. После регистрации вы можете просмотреть доступные комнаты
+              и подать заявление на заселение. Наши администраторы рассмотрят ваш запрос и если все хорошо, то одобрят заявку на заселение. В профиле отобразится статус заявки. Собирайте вещи и приятного проживания!
             </p>
           </div>
         </div>

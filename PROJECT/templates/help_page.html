@@ -7,6 +7,8 @@
       onload="this.rel='stylesheet'"
       href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
     />
+    <link rel="stylesheet" href="../static/CSS/basepage.css">
+
 
     <title>Помощь</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
@@ -14,15 +16,39 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   </head>
   <body>
-        <div class="px-40 flex flex-1 justify-center py-5">
-          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
-            <div class="flex flex-wrap justify-between gap-3 p-4"><p class="text-[#1c180d] tracking-light text-[32px] font-bold leading-tight min-w-72">Свяжитесь с нами</p></div>
-            <p class="text-[#1c180d] text-base font-normal leading-normal pb-3 pt-1 px-4">
-              По любым вопросам или помощи, пожалуйста, свяжитесь с нашей командой поддержки через Telegram. Наш бот доступен 24/7, чтобы помочь вам с вашим общежитием и любыми связанными вопросами.
-            </p
-            <div class="flex px-4 py-3 justify-start">
+    <header class="header">
+        <nav class="nav-container">
+            
+            <div class="LOGOT">
+                <a href="/" class="LOGOTIP">AllForStudents</a>
+            </div>
+            <div class="nav-items">
+            </div>
+            <div class="nav-items">
+                <a href="/about" class="nav-item">Про сайт</a>
+                <a href="#" class="nav-item">Как забронировать?</a>
+                <a href="#" class="nav-item">Общежития</a> 
+                <a href="/help" class="nav-item">Помощь</a>
+            </div>
+            <a href="/me" class="userlogo">
+                <div class="head"></div>
+                <div class="body"></div>
+            </a>
+        </nav>
+    </header>
+        <div class="px-60 flex flex-1 justify-center py-16">
+          <div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
+            <div class="flex flex-wrap justify-between gap-6 p-8">
+              <p class="text-[#1c180d] tracking-light text-[48px] font-bold leading-tight min-w-96">
+                Свяжитесь с нами
+              </p>
+              <p class="text-[#1c180d] text-xl font-normal leading-normal pb-6 pt-2 px-8">
+                По любым вопросам или помощи, пожалуйста, свяжитесь с нашей командой поддержки через Telegram. Наш бот доступен 24/7, чтобы помочь вам с вашим общежитием и любыми связанными вопросами.
+              </p>
+            </div>
+            <div class="flex px-8 py-6 justify-start">
               <a href="https://t.me/AllForStudents_help_bot"
-                class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#fac638] text-[#1c180d] text-sm font-bold leading-normal tracking-[0.015em]"
+                class="flex min-w-[140px] max-w-[600px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-8 bg-[#fac638] text-[#1c180d] text-xl font-bold leading-normal tracking-[0.015em]"
                 >
                 <span class="truncate">Свяжитесь с поддержкой через бота</span>
               </a>
@@ -30,6 +56,5 @@
           </div>
         </div>
       </div>
-    </div>
   </body>
 </html>

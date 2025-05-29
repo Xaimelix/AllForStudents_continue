@@ -439,7 +439,8 @@ def auto():
     if not server_base_url.endswith('/'):
         server_base_url += '/'
     rooms = db_sess.query(Room).filter(Room.cur_cnt_student < Room.max_cnt_student, Room.sex == current_user.sex).all()
-    print(rooms)
+    for i in rooms:
+        print(i.id)
     return redirect('/me')
 
 
