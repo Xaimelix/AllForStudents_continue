@@ -130,9 +130,7 @@ def myself():
     if not current_user.is_authenticated:
         return redirect('/login')
     try:
-        student_applications = db_sess.query(Application_request)\
-                                        .filter(Application_request.student_id == current_user.id)\
-                                        .all()
+        student_applications = db_sess.query(Application_request).filter(Application_request.student_id == current_user.id).all()
         applications_data = []
         for req in student_applications:
             applications_data.append({
@@ -164,7 +162,27 @@ def myself():
 # страница общежитий
 @app.route('/hostels')
 def hostel():
-    return render_template('finding.html')
+    db_sess = db_session.create_session()
+    hostels = db_sess.query(Hostel).all()
+    
+    # Создаем словарь для подсчета свободных мест по общежитиям
+    free_places_by_hostel = {}
+    
+    # Инициализируем счетчики для всех общежитий
+    for hostel in hostels:
+        free_places_by_hostel[hostel.id] = 0
+    
+    # Получаем все комнаты
+    rooms = db_sess.query(Room).all()
+    
+    # Считаем свободные места
+    for room in rooms:
+        if room.hostel_id in free_places_by_hostel:
+            free_places_by_hostel[room.hostel_id] += (room.max_cnt_student - room.cur_cnt_student)
+    db_sess.close()
+    return render_template('finding.html', 
+                          hostels=hostels, 
+                          free_places=free_places_by_hostel)
 
 
 @app.route('/filter')
@@ -176,6 +194,8 @@ def room():
 def test_rooms():
     session = db_session.create_session()
 
+    # Получаем параметры фильтрации
+    hostel_id = request.args.get('hostel', type=int)
     min_square = request.args.get('min_square', type=int)
     max_square = request.args.get('max_square', type=int)
     max_students = request.args.get('max_students', type=int)
@@ -183,6 +203,9 @@ def test_rooms():
 
     query = session.query(Room)
 
+    # Добавляем фильтрацию по общежитию
+    if hostel_id:
+        query = query.filter(Room.hostel_id == hostel_id)
     if min_square:
         query = query.filter(Room.square >= min_square)
     if max_square:
@@ -190,12 +213,14 @@ def test_rooms():
     if max_students:
         query = query.filter(Room.max_cnt_student == max_students)
     if sex_filter != 'any':
-        query = query.filter(Room.sex == int(sex_filter))  # Исправлено здесь
+        query = query.filter(Room.sex == int(sex_filter))
 
     rooms = query.all()
+    hostels = session.query(Hostel).all()  # Получаем все общежития для выпадающего списка
 
     return render_template('filter.html',
                            rooms=rooms,
+                           hostels=hostels,  # Передаем список общежитий в шаблон
                            current_filters=request.args)
 
 
@@ -355,7 +380,7 @@ def add_rooms():
     
     # Обработка POST-запроса
     hostel_id = int(request.form.get('hostel_id'))
-    print(hostel_id)
+    number_room = int(request.form.get('number_room'))
     square = request.form.get('square')
     max_cnt_student = request.form.get('max_cnt_student')
     floor = request.form.get('floor')
@@ -369,7 +394,8 @@ def add_rooms():
         cur_cnt_student=0,
         floor=floor,
         sex=sex,
-        side=side
+        side=side,
+        number_room=number_room
     )
     
     db_sess.add(room)

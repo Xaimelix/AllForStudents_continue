@@ -840,6 +840,7 @@ room_parser.add_argument('cur_cnt_student', type=int, required=True, help='Те�
 room_parser.add_argument('floor', type=int, required=True, help='Этаж комнаты обязателен', location=['form', 'json'])
 room_parser.add_argument('sex', type=bool, required=True, help='Пол комнаты (True - мужская, False - женская) обязателен', location=['form', 'json'])
 room_parser.add_argument('side', type=str, required=True, help='Сторона комнаты (например, "s - south", "n - north") обязательна', location=['form', 'json'])
+room_parser.add_argument('number_room', type=int, required=True, help='Номер комнаты в общежитии обязателен', location=['form', 'json'])
 
 
 # --- Новый класс для операций над коллекцией комнат ---
@@ -875,6 +876,7 @@ class RoomListResource(Resource):
                  result.append({
                     'id': room.id,
                     'hostel_id': room.hostel_id,
+                    'number_room': room.number_room,
                     'square': room.square,
                     'max_cnt_student': room.max_cnt_student,
                     'cur_cnt_student': room.cur_cnt_student,
@@ -907,6 +909,9 @@ class RoomListResource(Resource):
                 hostel_id:
                   type: integer
                   description: Номер общежития
+                number_room:
+                  type: integer
+                  descriptuon: Номер комнаты
                 square:
                   type: number
                   description: Площадь комнаты
@@ -927,6 +932,7 @@ class RoomListResource(Resource):
                   description: Сторона комнаты (например, "s", "n", "e", "w")
               required:
                 - hostel_id
+                - number_room
                 - square
                 - max_cnt_student
                 - cur_cnt_student
@@ -963,6 +969,7 @@ class RoomListResource(Resource):
         try:
             new_room = Room(
                 hostel_id=args['hostel_id'],
+                number_room=args['number_room'],
                 square=args['square'],
                 max_cnt_student=args['max_cnt_student'],
                 cur_cnt_student=args['cur_cnt_student'],
@@ -982,6 +989,7 @@ class RoomListResource(Resource):
 room_item_parser = reqparse.RequestParser()
 # Указываем location='json' для всех полей, которые можно обновлять
 room_item_parser.add_argument('hostel_id', type=int, required=False, help='Номер общежития обязателен', location=['form', 'json'])
+room_item_parser.add_argument('number_room', type=int, required=False, help='Номер комнаты в общежитии обязателен', location=['form', 'json'])
 room_item_parser.add_argument('square', type=float, required=False, help='Площадь комнаты обязательна', location=['form', 'json'])
 room_item_parser.add_argument('max_cnt_student', type=int, required=False, help='Максимальное количество студентов в комнате обязательно', location=['form', 'json'])
 room_item_parser.add_argument('cur_cnt_student', type=int, required=False, help='Текущее количество студентов в комнате обязательно', location=['form', 'json'])
@@ -1036,6 +1044,7 @@ class RoomItemResource(Resource):
             result = {
                 'id': room.id,
                 'hostel_id': room.hostel_id,
+                'number_room': room.number_room,
                 'square': room.square,
                 'max_cnt_student': room.max_cnt_student,
                 'cur_cnt_student': room.cur_cnt_student,
@@ -1067,6 +1076,8 @@ class RoomItemResource(Resource):
               properties:
                 hostel_id:
                   type: integer
+                number_room:
+                  type: number_room
                 square:
                   type: number
                 max_cnt_student:
@@ -1123,6 +1134,8 @@ class RoomItemResource(Resource):
             # Это позволяет делать частичные обновления (например, менять только площадь)
             if 'hostel_id' in args and args['hostel_id'] is not None:
                 room_to_update.hostel_id = args['hostel_id']
+            if 'number_room' in args and args['number_room'] is not None:
+                room_to_update.square = args['number_room']
             if 'square' in args and args['square'] is not None:
                 room_to_update.square = args['square']
             if 'max_cnt_student' in args and args['max_cnt_student'] is not None:

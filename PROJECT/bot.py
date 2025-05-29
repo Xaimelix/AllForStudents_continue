@@ -85,7 +85,7 @@ def reply_check_loop():
                     print(f"Ошибка при отправке ответа: {e}")
         except Exception as e:
             print(f"Ошибка в reply_check_loop: {e}")
-
+        db_sess.close()
         time.sleep(10)  # Проверять каждые 10 секунд
 
 def run_bot():

@@ -23,33 +23,25 @@
     </header>
 
     <div class="LIST">
-        <div class="FIRHOUSE">
-            <img src="../../static/CSS/img/Campus FEFU.jpg" alt="1 ОБЩЕЖИТИЕ" class="house-img">
-            <div class="FIRWHITE">
-                <h2>ОБЩЕЖИТИЕ №1 
-                    / 135 свободных мест</h2>
-                <h4>Современное 10-этажное общежитие предлагает 500 комфортабельных комнат, рассчитанных на 1-3 человек, с продуманной планировкой и звукоизоляцией.
-                    На 8 этажах расположены 400 уютных номеров с отдельными санузлами, а два верхних уровня занимают просторные студии с кухонными уголками.
-                    Каждый из 250 жилых блоков включает 2-4 комнаты...
-                </h4>
-            </div>
+        <div class="BUTTONS">
+            {% for hostel in hostels %}
+                <div class="FIRHOUSE">
+                    <a href="/rooms?hostel={{ hostel.id }}">
+                        <img src="../../static/CSS/img/Campus FEFU.jpg" alt="ОБЩЕЖИТИЕ" class="house-img">
+                        <div class="FIRWHITE">
+                            <h2>ОБЩЕЖИТИЕ №{{ hostel.id }} / {{ free_places[hostel.id] }} свободных мест</h2>
+                            <h4>
+                                {% if hostel.description %}
+                                    {{ hostel.description }}
+                                {% else %}
+                                    Современное общежитие предлагает комфортабельные комнаты с продуманной планировкой.
+                                {% endif %}
+                            </h4>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
         </div>
-        
-        <div class="SECHOUSE">
-            <img src="../../static/CSS/img/Campus FEFU.jpg" alt="2 ОБЩЕЖИТИЕ" class="house-img">
-            <div class="SECWHITE">
-                <h2>ОБЩЕЖИТИЕ №2 / 257 свободных мест</h2>
-                <h4>Общежитие для студентов состоит из пяти этажей, каждый из которых предлагает комфортные условия для проживания. На каждом этаже расположены двух- и трехместные комнаты, оборудованные удобными кроватями, письменными столами и шкафами для личных вещей. Санитарные узлы с душевыми кабинами находятся на каждом этаже, что обеспечивает...</h4>
-            </div>
-        </div>
-    </div>
-    <div class="BUTTONS">
-        <a href="/rooms" class="take-link">
-            <h1 class="first">Забронировать</h1>
-          </a>
-        <a href="/rooms" class="take-link">
-            <h1 class="second">Забронировать</h1>
-          </a>
     </div>
 </body>
 
