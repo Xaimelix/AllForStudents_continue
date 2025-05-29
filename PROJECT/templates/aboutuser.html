@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль</title>
     <link rel="stylesheet" href="{{url_for('static', filename='CSS/aboutuser.css') }}">
+    <style>
+       textarea {
+            width: 90%; /* Ширина поля в процентах */
+            height: 200px; /* Высота поля в пикселях */
+            resize: none; /* Запрещаем изменять размер */
+       }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -243,7 +250,7 @@
                             <p><strong>Дата въезда:</strong> {{ app.date_entr if app.date_entr is not none else 'Не указана' }}</p>
                             <p><strong>Дата выезда:</strong> {{ app.date_exit if app.date_exit is not none else 'Не указана' }}</p>
                             <p><strong>Комната ID:</strong> {{ app.room_id }}</p>
-                            <textarea class="form-control" rows="3" readonly>{{ app.comment if app.comment else 'Комментарий отсутствует' }}</textarea>
+                            <textarea class="form-control"  rows="3" readonly>{{ app.comment if app.comment else 'Комментарий отсутствует' }}</textarea>
                         </div>
                 {% endfor %}
                 </div>
@@ -254,7 +261,6 @@
         </div>
 
     </div>
-    
 
     <!-- <script>
         document.querySelector('.profile-form').addEventListener('submit', function(e) {

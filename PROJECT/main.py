@@ -19,6 +19,7 @@ from flask import abort
 from flask_cors import CORS
 import requests
 import os
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from data.help_requests import HelpRequests
 
@@ -45,7 +46,7 @@ def forbidden(e):
 
 
     # Добавьте эту строку перед инициализацией Swagger
-# app.config['SWAGGER_URL'] = '/apidocs' # URL для Swagger UI
+#app.config['SWAGGER_URL'] = '/apidocs' # URL для Swagger UI
 
 swagger = Swagger(app, template={
         "swagger": "2.0",
@@ -152,6 +153,12 @@ def myself():
     finally:
         # Обязательно закрываем сессию базы данных
         db_sess.close()
+
+
+#@app.route('/apidocs')
+#@admin_required
+#def swagger_ui():
+#    return render_template('flasgger_ui.html')
 
 
 # страница общежитий
@@ -297,8 +304,8 @@ def admin_profile():
     return render_template('admin_profile.html', user=current_user)
 
 
-@admin_required
 @app.route('/admin_support_reply', methods=['GET', 'POST'])
+@admin_required
 def admin_support_reply():
     db_sess = db_session.create_session()
     if request.method == 'POST':
@@ -314,6 +321,75 @@ def admin_support_reply():
     db_sess.close()
     return render_template('admin_support_reply.html', user=current_user, requests=open_requests)
 
+@app.route('/add_hostels', methods=['GET', 'POST'])
+@admin_required
+def add_hostels():
+    if request.method == 'GET':
+        return render_template('add_hostels.html')
+    
+    # Обработка POST-запроса
+    address = request.form.get('address')
+    district = request.form.get('district')
+    description = request.form.get('description')
+    
+    db_sess = db_session.create_session()
+    hostel = Hostel(
+        address=address,
+        district=district,
+        description=description
+    )
+    db_sess.add(hostel)
+    db_sess.commit()
+    db_sess.close()
+    
+    return redirect('/admin')
+
+@app.route('/add_rooms', methods=['GET', 'POST'])
+@admin_required
+def add_rooms():
+    db_sess = db_session.create_session()
+    
+    if request.method == 'GET':
+        hostels = db_sess.query(Hostel).all()
+        return render_template('add_rooms.html', hostels=hostels)
+    
+    # Обработка POST-запроса
+    hostel_id = int(request.form.get('hostel_id'))
+    print(hostel_id)
+    square = request.form.get('square')
+    max_cnt_student = request.form.get('max_cnt_student')
+    floor = request.form.get('floor')
+    sex = int(request.form.get('sex'))
+    side = request.form.get('side')
+    
+    room = Room(
+        hostel_id=hostel_id,
+        square=square,
+        max_cnt_student=max_cnt_student,
+        cur_cnt_student=0,
+        floor=floor,
+        sex=sex,
+        side=side
+    )
+    
+    db_sess.add(room)
+    db_sess.commit()
+    
+    # Создаем папку для фотографий комнаты
+    room_dir = os.path.join(app.static_folder, 'images', 'Rooms', str(room.id))
+    os.makedirs(room_dir, exist_ok=True)
+    
+    # Обрабатываем загрузку фотографий
+    def save_photo(file, filename):
+        if file and file.filename != '':
+            file.save(os.path.join(room_dir, filename))
+    
+    save_photo(request.files['main_photo'], 'main.JPG')
+    save_photo(request.files['bathroom_photo'], 'bathroom.JPG')
+    save_photo(request.files['kitchen_photo'], 'kitchen.JPG')
+    
+    db_sess.close()
+    return redirect('/admin')
 
 @app.route('/help', methods=['GET', 'POST'])
 def help_page():

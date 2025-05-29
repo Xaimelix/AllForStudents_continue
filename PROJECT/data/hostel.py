@@ -9,6 +9,7 @@ class Hostel(SqlAlchemyBase, UserMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     address = sqlalchemy.Column(sqlalchemy.String)
     district = sqlalchemy.Column(sqlalchemy.String)
+    description = sqlalchemy.Column(sqlalchemy.Text)
 
     # общежития с фотографиями
     # общежития с описанием

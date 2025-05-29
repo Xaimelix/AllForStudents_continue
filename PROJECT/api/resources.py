@@ -1204,6 +1204,7 @@ hostel_parser = reqparse.RequestParser()
 # !!! ДОБАВЛЕНО location='form' КО ВСЕМ АРГУМЕНТАМ ПАРСЕРА ОБЩЕЖИТИЙ !!!
 hostel_parser.add_argument('address', type=str, required=True, help='Адрес общежития обязателен', location=['form', 'json'])
 hostel_parser.add_argument('district', type=str, required=True, help='Район общежития обязателен', location=['form', 'json'])
+hostel_parser.add_argument('description', type=str, required=True, help='Описание общежития обязательно', location=['form', 'json'])
 
 
 # --- Новый класс для операций над коллекцией общежитий ---
@@ -1243,7 +1244,8 @@ class HostelListResource(Resource):
                 result.append({
                     'id': hostel.id,
                     'address': hostel.address,
-                    'district': hostel.district
+                    'district': hostel.district,
+                    'description': hostel.description
                 })
             return {'hostels': result}, 200
         except Exception as e:
@@ -1272,9 +1274,13 @@ class HostelListResource(Resource):
                 district:
                   type: string
                   description: Район общежития
+                description:
+                  type: string
+                  description: Описание
               required:
                 - address
                 - district
+                - description
         responses:
           201:
             description: Общежитие успешно создано
@@ -1302,7 +1308,8 @@ class HostelListResource(Resource):
         try:
             new_hostel = Hostel(
                 address=args['address'],
-                district=args['district']
+                district=args['district'],
+                description=args['description']
             )
             db_sess.add(new_hostel)
             db_sess.commit()
@@ -1359,7 +1366,8 @@ class HostelItemResource(Resource):
             result = {
                 'id': hostel.id,
                 'address': hostel.address,
-                'district': hostel.district
+                'district': hostel.district,
+                'description': hostel.description
             }
             return {'hostel': result}, 200
         except Exception as e:

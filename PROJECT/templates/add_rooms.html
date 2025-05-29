@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить комнату</title>
+    <link rel="stylesheet" href="/static/CSS/basepage.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        button {
+            background: #4a6cf7;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #3a5be0;
+        }
+        .photo-upload {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #e9ecef;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <div class="LOGOT">
+                <a href="/" class="LOGOTIP">AllForStudents</a>
+            </div>
+            <div class="nav-items">
+                <a href="/admin" class="nav-item">Админ-панель</a>
+                <a href="/add_hostels" class="nav-item">Добавить общежитие</a>
+                <a href="/add_rooms" class="nav-item">Добавить комнату</a>
+            </div>
+            <a href="/logout" class="nav-item">Выйти</a>
+        </nav>
+    </header>
+
+    <div class="form-container">
+        <h1>Добавить новую комнату</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="hostel_id">Общежитие:</label>
+                <select id="hostel_id" name="hostel_id" required>
+                    {% for hostel in hostels %}
+                        <option value="{{ hostel.id }}">{{ hostel.address }} ({{ hostel.district }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="square">Площадь (м²):</label>
+                <input type="number" step="0.1" id="square" name="square" required>
+            </div>
+            <div class="form-group">
+                <label for="max_cnt_student">Количество мест:</label>
+                <input type="number" id="max_cnt_student" name="max_cnt_student" required>
+            </div>
+            <div class="form-group">
+                <label for="floor">Этаж:</label>
+                <input type="number" id="floor" name="floor" required>
+            </div>
+            <div class="form-group">
+                <label for="sex">Пол:</label>
+                <select id="sex" name="sex" required>
+                    <option value="1">Мужской</option>
+                    <option value="0">Женский</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="side">Сторона:</label>
+                <select id="side" name="side" required>
+                    <option value="north">Север</option>
+                    <option value="south">Юг</option>
+                    <option value="east">Восток</option>
+                    <option value="west">Запад</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Фотографии:</label>
+                <div class="photo-upload">
+                    <p>Главное фото (main.JPG):</p>
+                    <input type="file" name="main_photo" accept="image/*" required>
+                    
+                    <p style="margin-top: 1rem;">Фото ванной (bathroom.JPG):</p>
+                    <input type="file" name="bathroom_photo" accept="image/*" required>
+                    
+                    <p style="margin-top: 1rem;">Фото кухни (kitchen.JPG):</p>
+                    <input type="file" name="kitchen_photo" accept="image/*" required>
+                </div>
+            </div>
+            <button type="submit">Добавить комнату</button>
+        </form>
+    </div>
+</body>
+</html>
