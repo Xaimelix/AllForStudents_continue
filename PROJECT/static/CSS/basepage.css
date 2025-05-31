@@ -387,7 +387,7 @@ body {
     width: 100%;
     max-width: 1700px;
     height: auto; /* Убрать фиксированную высоту */
-    min-height: 600px; /* Минимальная высота */
+    min-height: 800px; /* Минимальная высота */
     background-color: #000000;
     
     border-radius: 50px;
@@ -397,15 +397,13 @@ body {
     justify-content: center;
     align-items: center;
     gap: 100px;
-    
+    flex-wrap: wrap; /* Добавлено */
+
     overflow: visible; /* Важно! */
 }
 
 .image-box img {
-    max-width: 30%; /* Максимум 30% ширины контейнера */
-    max-height: 400px;
-    width: auto;
-    height: auto;
+    max-height: 200px;
     border-radius: 20px;
     object-fit: contain;
     border: px solid #fff725; /* Для видимости */

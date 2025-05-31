@@ -1,29 +1,181 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-body {
-    font-family: 'Open Sans', sans-serif;
-    background-color: #ffffff;
-    line-height: 1.6;
-}
 .LIST {
     max-width: 1820px;
     width: 100%;
     margin: 0 auto;
-    padding: 0 50px;
+    padding: 20px;
     box-sizing: border-box;
 }
-/* Стили шапки */
+
+/* Контейнер для карточек */
+.hostels-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    justify-content: center;
+}
+
+/* Карточка общежития */
+.hostel-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 2px solid black;
+    height: 850px; /* Фиксированная высота */
+    background: #b95c5c;
+    transition: transform 0.3s ease;
+}
+
+.hostel-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+/* Изображение в карточке */
+.hostel-image {
+    width: 100%;
+    height: 50%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.hostel-card:hover .hostel-image {
+    transform: scale(1.05);
+}
+
+/* Текстовый блок */
+.hostel-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 400px;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 25px;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.hostel-info::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+}
+
+.hostel-info h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #000;
+}
+
+.hostel-info h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #929292;
+    line-height: 1.5;
+}
+
+/* Индикатор свободных мест */
+.free-places {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(26, 42, 108, 0.85);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 16px;
+    z-index: 3;
+    backdrop-filter: blur(2px);
+}
+
+/* Адаптивные стили */
+@media (max-width: 1200px) {
+    .hostels-container {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 992px) {
+    .hostel-card {
+        height: 750px;
+    }
+    
+    .hostel-info {
+        height: 350px;
+        padding: 20px;
+    }
+    
+    .hostel-info h2 {
+        font-size: 24px;
+    }
+    
+    .hostel-info h4 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hostels-container {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+    
+    .hostel-card {
+        height: 700px;
+    }
+    
+    .hostel-info {
+        height: 320px;
+    }
+    
+    .free-places {
+        font-size: 14px;
+        padding: 6px 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .LIST {
+        padding: 0 20px;
+    }
+    
+    .hostels-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .hostel-card {
+        height: 650px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .hostel-info {
+        height: 300px;
+        padding: 15px;
+    }
+    
+    .hostel-info h2 {
+        font-size: 22px;
+    }
+    
+    .free-places {
+        top: 15px;
+        right: 15px;
+    }
+}
+
+/* Стили для шапки (оставлены без изменений) */
 .header {
     width: 100%;
     background-color: #f1f1f1;
     padding: 10px 0;
 }
-
 .nav-container {
     display: flex;
     justify-content: space-between;
@@ -32,8 +184,6 @@ body {
     padding: 0 30px;
     position: relative;
 }
-
-/* Логотип */
 .LOGOTIP {
     color: #b0b0b0;
     text-decoration: none;
@@ -44,8 +194,6 @@ body {
     border-radius: 4px;
     letter-spacing: 0.5px;
 }
-
-/* Навигационное меню */
 .nav-items {
     display: flex;
     gap: 40px;
@@ -53,7 +201,6 @@ body {
     left: 50%;
     transform: translateX(-50%);
 }
-
 .nav-item {
     color: #b0b0b0;
     text-decoration: none;
@@ -62,11 +209,7 @@ body {
     font-size: 30px;
     padding: 8px 15px;
     transition: all 0.3s ease;
-    
 }
-
-
-/* Иконка пользователя */
 .userlogo {
     width: 280px;
     height: 50px;
@@ -81,30 +224,7 @@ body {
     transform: scale(1.1);
     cursor: pointer;
 }
-
-
-
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .nav-items {
-        flex-direction: column;
-        gap: 15px;
-        position: static;
-        transform: none;
-    }
-    
-    .nav-item {
-        text-align: center;
-        padding: 10px;
-    }
-    
-    .userlogo {
-        margin: 0 20px;
-    }
-}
 .what {
-    /* Существующие стили */
     position: absolute;
     left: 10%;
     top: 45%;
@@ -114,144 +234,13 @@ body {
     font-family: 'Open Sans', sans-serif;
     font-weight: 800;
     font-size: 30px;
-    
-    /* Новые стили для ссылки */
     text-decoration: none;
     cursor: pointer;
-    z-index: 3; /* Чтобы ссылка была поверх других элементов */
-    padding: 15px 30px; /* Увеличиваем кликабельную область */
+    z-index: 3;
+    padding: 15px 30px;
 }
-
-/* Ховер-эффект */
 .what:hover {
     color: #fff;
-    
-}
-.FIRHOUSE, .SECHOUSE {
-    position: relative;
-    overflow: hidden;
-}
-
-/* Добавляем градиент поверх картинки, но под белым блоком */
-.FIRHOUSE::before,
-.SECHOUSE::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
-    z-index: 1; /* Между картинкой (0) и белым блоком (2) */
-}
-
-.house-img {
-    width: 100%;
-    height: auto;
-    display: block;
-    position: relative;
-    z-index: 0;
-    margin-top: -120px;
-}
-
-.FIRWHITE, .SECWHITE {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 400px;
-    background: white;
-    border-radius: 20px 20px 0 0;
-    z-index: 2; /* Самый верхний слой */
-    padding: 10px;
-    box-sizing: border-box;
-    font-size: 24px;
-    font-weight: 800 ;
-    
-}
-
-/* Остальные стили остаются без изменений */
-.FIRHOUSE {
-    background: #b95c5c; /* Цвет фона, если картинка не загрузится */
-}
-
-.SECHOUSE {
-    background: #a14e4e;
-}
-
-
-.LIST {
-    display: flex;
-    gap: 120px;
-    justify-content: center;
-    max-width: 1820px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 50px;
-    box-sizing: border-box;
-}
-
-.FIRHOUSE, .SECHOUSE {
-    width: 40%;
-    height: 750px;
-    border-radius: 20px;
-    border: 2px solid black;
-    margin: 50px 0;
-}
-.FIRWHITE h4 {
-    font-weight: 600;
-    color: #929292;
-    margin-top: 20px;
-    
-}
-.SECWHITE h4 {
-    font-weight: 600;
-    color: #929292;
-    margin-top: 20px;
-}
-/* Градиент для белых блоков */
-.FIRWHITE::after,
-.SECWHITE::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60%; /* Высота градиента (регулируйте под контент) */
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 1) 100%
-    );
-    z-index: 1; /* Чтобы градиент был поверх текста h4, но под h2 */
-    pointer-events: none; /* Не мешает взаимодействию */
-}
-
-/* Поднимаем заголовок h2 выше градиента */
-.FIRWHITE h1,
-.SECWHITE h1 {
-    position: relative;
-    z-index: 2;
-}
-
-/* Добавляем padding для текста h4, чтобы он не прилипал к краям */
-.FIRWHITE h4,
-.SECWHITE h4 {
-    position: relative;
-    z-index: 1;
-    padding: 20px 30px 40px; /* Нижний padding под градиент */
-}
-.BUTTONS {
-    display: flex;
-    gap: 120px; /* Такой же как в .LIST */
-    justify-content: center;
-    max-width: 1820px;
-    width: 100%;
-    margin: 10px auto 0;
-    padding: 0 50px;
-    box-sizing: border-box;
-    
-    
 }
 
 /* Общие стили для обеих кнопок */

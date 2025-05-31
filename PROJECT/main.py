@@ -117,7 +117,10 @@ def load_user(user_id):
 # основная страница
 @app.route('/')
 def main_page():
-    return render_template("basepage.html")
+    db_sess = db_session.create_session()
+    top_hostels = db_sess.query(Hostel).order_by(Hostel.id.desc()).limit(3).all()
+    db_sess.close()
+    return render_template("basepage.html", top_hostels=top_hostels[::-1])
 
 
 # страница пользователя
@@ -165,17 +168,14 @@ def hostel():
     db_sess = db_session.create_session()
     hostels = db_sess.query(Hostel).all()
     
-    # Создаем словарь для подсчета свободных мест по общежитиям
     free_places_by_hostel = {}
     
-    # Инициализируем счетчики для всех общежитий
     for hostel in hostels:
         free_places_by_hostel[hostel.id] = 0
     
     # Получаем все комнаты
     rooms = db_sess.query(Room).all()
     
-    # Считаем свободные места
     for room in rooms:
         if room.hostel_id in free_places_by_hostel:
             free_places_by_hostel[room.hostel_id] += (room.max_cnt_student - room.cur_cnt_student)
@@ -194,7 +194,6 @@ def room():
 def test_rooms():
     session = db_session.create_session()
 
-    # Получаем параметры фильтрации
     hostel_id = request.args.get('hostel', type=int)
     min_square = request.args.get('min_square', type=int)
     max_square = request.args.get('max_square', type=int)
@@ -203,7 +202,6 @@ def test_rooms():
 
     query = session.query(Room)
 
-    # Добавляем фильтрацию по общежитию
     if hostel_id:
         query = query.filter(Room.hostel_id == hostel_id)
     if min_square:
@@ -216,11 +214,11 @@ def test_rooms():
         query = query.filter(Room.sex == int(sex_filter))
 
     rooms = query.all()
-    hostels = session.query(Hostel).all()  # Получаем все общежития для выпадающего списка
+    hostels = session.query(Hostel).all()
 
     return render_template('filter.html',
                            rooms=rooms,
-                           hostels=hostels,  # Передаем список общежитий в шаблон
+                           hostels=hostels,
                            current_filters=request.args)
 
 
@@ -230,18 +228,12 @@ def book_room(id):
 
     if not current_user.is_authenticated:
         return redirect('/login')
-
-    # Получаем информацию о комнате
     room = db_sess.query(Room).get(id)
     if not room:
         abort(404)
-
-    # Получаем информацию о студенте
     student = db_sess.query(Student).get(current_user.id)
     if not student:
         abort(403)
-
-    # Формируем базовый URL сервера
     server_base_url = request.url_root.rstrip('/') + '/'
 
     return render_template('book_room.html',
@@ -365,8 +357,19 @@ def add_hostels():
     )
     db_sess.add(hostel)
     db_sess.commit()
-    db_sess.close()
     
+    # Создаем папку для фотографий общежития
+    hostel_dir = os.path.join(app.static_folder, 'images', 'Hostels', str(hostel.id))
+    os.makedirs(hostel_dir, exist_ok=True)
+    
+    # Обрабатываем загрузку фотографий
+    def save_photo(file, filename):
+        if file and file.filename != '':
+            file.save(os.path.join(hostel_dir, filename))
+    
+    save_photo(request.files['main_photo'], 'main.JPG')
+    
+    db_sess.close()
     return redirect('/admin')
 
 @app.route('/add_rooms', methods=['GET', 'POST'])

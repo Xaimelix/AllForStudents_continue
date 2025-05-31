@@ -4,24 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AllForStudents - твое общежитие</title>
-    <!-- Подключаем CSS файл -->
-     <!-- ... остальные метатеги ... -->
-     <link rel="stylesheet" href="../static/CSS/basepage.css">
+    <link rel="stylesheet" href="../static/CSS/basepage.css">
+    <style>
+        .hostel-card {
+            width: 400px;
+            height: 450px;
+            text-align: center;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden; /* Для анимации изображения */
+        }
+        .hostel-card:hover {
+            box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+        }
+        .hostel-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+        .hostel-card:hover .hostel-image {
+            transform: scale(1.05);
+        }
+        .hostel-info {
+            padding: 15px 0;
+        }
+        .hostel-title {
+            font-size: 1.8rem;
+            margin: 15px 0;
+            color: #333;
+        }
+        .hostel-district {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
-    
 <body>
     <header class="header">
         <nav class="nav-container">
-            
             <div class="LOGOT">
-                <a href="#" class="LOGOTIP">AllForStudents</a>
-            </div>
-            <div class="nav-items">
+                <a href="/" class="LOGOTIP">AllForStudents</a>
             </div>
             <div class="nav-items">
                 <a href="/about" class="nav-item">Про сайт</a>
                 <a href="#" class="nav-item">Как забронировать?</a>
-                <a href="#" class="nav-item">Общежития</a> 
+                <a href="/hostels" class="nav-item">Общежития</a> 
                 <a href="/help" class="nav-item">Помощь</a>
             </div>
             <a href="/me" class="userlogo">
@@ -30,6 +62,7 @@
             </a>
         </nav>
     </header>
+    
     <div class="MAIN-CONTAINER">
         <div class="square-container">
             <div class="circle"></div>
@@ -43,14 +76,15 @@
                 
                 <div class="about-container">
                     <div class="btnback"></div>
-                    <h1 class="what">Как это?</h1>
+                    <a href="/about" class="what">Как это?</a>
                     <div class="strelka">
                         <h1 class="strela">→</h1>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="'STATA">
+        
+        <div class="STATA">
             <div class="FIRST">
                 <h1 class="COUNTRATE">Более 2999+ отзывов!</h1>
             </div>
@@ -61,30 +95,43 @@
                 <h1 class="QUICK">Быстро и надежно!</h1>
             </div>
         </div>
-        </div>
-        <div class="FADE">
-
         
-        <div class="RATING-box">
-            <h1 class="TEXT">Топ рейтинг общежитий!</h1>
-            <h1 class="shortinfo">Чистота! Качество! Простор! Удобство!...</h1>
-        </div>
-        <div class="image-box">
-            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 1">
-            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 2">
-            <img src="../static/CSS/img/Travel & Tropical Nature.jpg" alt="Общежитие 3">
-        </div>
+        <div class="FADE">
+            <div class="RATING-box">
+                <h1 class="TEXT">Топ рейтинг общежитий!</h1>
+                <h1 class="shortinfo">Чистота! Качество! Простор! Удобство!...</h1>
+            </div>
+            
+            <div class="image-box">
+                {% if top_hostels %}
+                    {% for hostel in top_hostels %}
+                    <div class="hostel-card">
+                        <img src='..\static\images\Hostels\{{ hostel.id }}\main.JPG'
+                             alt="{{ hostel.address }}" 
+                             onerror="this.onerror=null; this.src='../static/images/Error_images/not_found_image.png'">
+                        <div class="hostel-info">
+                            <h3 class="hostel-title">Общежитие №{{ hostel.id }}</h3>
+                            <p class="hostel-district">{{ hostel.district }} район</p>
+                            <h4>{{ hostel.address }}</h4> 
+                            <p>{{ hostel.description }}</h5>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-hostels">
+                        <p>Пока нет общежитий. Скоро появятся!</p>
+                    </div>
+                {% endif %}
+            </div>
 
-        <div class="takeit">
-            <div class="btntake"></div>
-            <a href="/hostels" class="take-link">
-              <h1 class="take">ЗАБРОНИРОВАТЬ!</h1>
-            </a>
-          </div>
+            <div class="takeit">
+                <a href="/hostels" class="take-link">
+                    <div class="btntake"></div>
+                    <h1 class="take">ЗАБРОНИРОВАТЬ!</h1>
+                </a>
+            </div>
         </div>
-    <main>
-        <!-- Здесь будет основной контент страницы -->
-    </main>
+    </div>
 
     <script src="../static/JS/basepage.js"></script>
 </body>

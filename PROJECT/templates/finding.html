@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Header</title>
-    <link rel="stylesheet" href="../../static/CSS/finding.css">
+    <title>Общежития - AllForStudents</title>
+    <link rel="stylesheet" href="../static/CSS/finding.css">
 </head>
 <body>
     <header class="header">
@@ -17,32 +17,33 @@
             </div>
             <div class="userlogo">
                 <div class="head"></div>
-                <a href="/" class="what">Вернуться</a> <!-- Добавляем ссылку -->
+                <a href="/" class="what">Вернуться</a>
             </div>
         </nav>
     </header>
 
     <div class="LIST">
-        <div class="BUTTONS">
+        <div class="hostels-container">
             {% for hostel in hostels %}
-                <div class="FIRHOUSE">
-                    <a href="/rooms?hostel={{ hostel.id }}">
-                        <img src="../../static/CSS/img/Campus FEFU.jpg" alt="ОБЩЕЖИТИЕ" class="house-img">
-                        <div class="FIRWHITE">
-                            <h2>ОБЩЕЖИТИЕ №{{ hostel.id }} / {{ free_places[hostel.id] }} свободных мест</h2>
-                            <h4>
-                                {% if hostel.description %}
-                                    {{ hostel.description }}
-                                {% else %}
-                                    Современное общежитие предлагает комфортабельные комнаты с продуманной планировкой.
-                                {% endif %}
-                            </h4>
-                        </div>
-                    </a>
+            <a href="/rooms?hostel={{ hostel.id }}" class="hostel-card">
+                <div class="free-places">{{ free_places[hostel.id] }} свободных мест</div>
+                <img src='..\static\images\Hostels\{{ hostel.id }}\main.JPG' 
+                     alt="Общежитие №{{ hostel.id }}" 
+                     class="hostel-image" 
+                     onerror="this.onerror=null;this.src='../static/images/Error_images/not_found_image.png'">
+                <div class="hostel-info">
+                    <h2>ОБЩЕЖИТИЕ №{{ hostel.id }}</h2>
+                    <h4>
+                        {% if hostel.description %}
+                            {{ hostel.description }}
+                        {% else %}
+                            Современное общежитие предлагает комфортабельные комнаты с продуманной планировкой.
+                        {% endif %}
+                    </h4>
                 </div>
+            </a>
             {% endfor %}
         </div>
     </div>
 </body>
-
 </html>
