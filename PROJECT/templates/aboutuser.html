@@ -6,11 +6,47 @@
     <title>Профиль</title>
     <link rel="stylesheet" href="{{url_for('static', filename='CSS/aboutuser.css') }}">
     <style>
-       textarea {
-            width: 90%; /* Ширина поля в процентах */
-            height: 200px; /* Высота поля в пикселях */
-            resize: none; /* Запрещаем изменять размер */
-       }
+       .btn-eviction {
+            background-color: #fffe27;      /* Ярко-жёлтый фон */
+            color: #222;                   /* Тёмный текст */
+            border: 2px solid #222;        /* Чёрная рамка */
+            border-radius: 8px;            /* Скругление углов */
+            padding: 10px 24px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-eviction:hover {
+            background-color: #ffd60a;     /* Более насыщённый жёлтый при наведении */
+            color: #000;
+        }
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 260px;
+            background: #fffbe0;
+            color: #222;
+            border: 1.5px solid #222;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 10;
+            left: 50%;
+            top: 110%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -41,10 +77,38 @@
                         <input type="text" id="fullname" name="fullname" value="{{item.name}} {{item.surname}}" required>
                     </div>
                     <div class="room-info-container">
-                        <label >Сейчас вы проживаете в общежитии</label>
+                        <label >Вы проживаете в общежитии</label>
                         <input type="text" id="hostel" name="hostel" value="{{item.hostel_id}}" readonly placeholder="Нет общежития">
-                        <label >Сейчас вы проживаете в комнате</label>
+                        <script>
+                            // Получаем элемент input для общежития
+                            const hostelInput = document.getElementById('hostel');
+                            // Если значение есть, убираем placeholder
+                            const roomId = {{ item.room_id }};
+                            async function fetchHostelInfo() {
+                                try {
+                                    const response = await fetch(`{{ server_url }}api/rooms/${roomId}`);
+                                    if (response.ok) {
+                                        const data = await response.json();
+                                        console.log(data)
+                                        hostelInput.value = data['room']['hostel_id']; // Устанавливаем значение общежития
+                                    } else {
+                                        console.error('Ошибка при получении данных общежития:', response.status);
+                                        hostelInput.value = 'Ошибка получения общежития';
+                                    }
+                                } catch (error) {
+                                    console.error('Ошибка при выполнении запроса:', error);
+                                    hostelInput.value = 'Ошибка получения общежития';
+                                }
+                            }
+                            fetchHostelInfo();
+                        </script>
+                        <label >Вы проживаете в комнате</label>
                         <input type="text" id="room" name="room" value="{{item.room_id}}" readonly placeholder="Нет комнаты">
+                        <div class="tooltip-container">
+                            <button class="btn-eviction" type="button">Выселиться?</button>
+                            <span class="tooltip-text">После нажатия и одобрения администратором вы будете выселены из комнаты</span>
+                        </div>
+                        
                     </div>
                     <div class="input-group">
                         <label>Пол</label>
@@ -80,16 +144,42 @@
                     <script>
         // Получаем элемент формы
         const profileForm = document.querySelector('.profile-form');
+        const eviction_btn = document.querySelector('.btn-eviction');
 
         // Добавляем обработчик события submit к форме
         // Передаем только ссылку на функцию save_btn_click
         profileForm.addEventListener('submit', save_btn_click);
+        eviction_btn.addEventListener('click', eviction);
 
         async function init() {
             // Получаем элемент select для курса
             const courseSelect = document.getElementById('course');
             // Устанавливаем текущее значение курса в select
             courseSelect.value = "{{ item.course }}"; // Устанавливаем значение курса из контекста шаблона
+        }
+
+        async function eviction(event) {
+            try {
+                const response = await fetch(`{{ server_url }}api/application_eviction`, {
+                    method: 'POST', // Метод POST для выселения
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        'date': new Date().toISOString().slice(0, 10), // Текущая дата в формате ISO
+                        'status': '0', // Статус "Ожидает подтверждения"
+                        'student_id': "{{ item.id }}", // ID студента из контекста шаблона
+                    })
+                });
+            }
+            catch (error) {
+                console.error('Ошибка при выполнении запроса на выселение:', error);
+                alert(`Произошла ошибка отправке запроса на выселение: ${error.message}`); // Показываем ошибку пользователю
+            }
+            finally {
+                alert('Заявка на выселение отправлена! Ожидайте подтверждения от администратора.');
+                window.location.reload()
+            }
         }
 
         // Асинхронная функция, которая будет вызвана при отправке формы
@@ -100,6 +190,7 @@
             const currentCourse = document.getElementById('course').value;
             const currentFullName = document.getElementById('fullname').value;
             const about = document.getElementById('about').value;
+            const roomId = document.getElementById('room').value;
 
             // Получаем выбранное значение пола из радио-кнопок
             const genderRadios = document.getElementsByName('gender');
@@ -142,8 +233,7 @@
                 if (!isNaN(updatedData.course)) finalUpdatedData.course = updatedData.course; // Проверяем, что курс - число
                 if (selectedGender !== null) finalUpdatedData.sex = updatedData.sex; // Добавляем пол, только если он был выбран
                 if (about !== '') finalUpdatedData.about = about; // Добавляем поле "О себе", только если оно заполнено
-
-                console.log('Данные, отправляемые в PUT запросе:', finalUpdatedData);
+                if (roomId !== '') finalUpdatedData.room_id = roomId; // Добавляем ID комнаты, только если он указан
 
 
                 // Отправляем PUT запрос
@@ -159,8 +249,8 @@
 
                 // Обработка ответа от сервера
                 if (response.ok) { // Если статус ответа 2xx
-                     alert('Изменение данных успешно.');
-                     console.log('PUT запрос успешно выполнен.');
+                    alert('Изменение данных успешно.');
+                    console.log('PUT запрос успешно выполнен.');
                      window.location.reload(); // Перезагружаем страницу, чтобы увидеть изменения
                 } else { // Если статус ответа не 2xx (ошибка)
                     let errorMessage = `Ошибка HTTP: ${response.status}`;
@@ -168,17 +258,17 @@
                     try {
                         const errorData = await response.json();
                         errorMessage = errorData.message || `Ошибка сервера: ${response.status}`;
-                         console.error('Ответ сервера с ошибкой:', errorData);
+                        console.error('Ответ сервера с ошибкой:', errorData);
                     } catch (jsonError) {
-                         console.error('Не удалось распарсить JSON ответа ошибки:', jsonError);
+                        console.error('Не удалось распарсить JSON ответа ошибки:', jsonError);
                          // Если ответ не в формате JSON, можно попробовать получить его как текст
-                         try {
-                             const errorText = await response.text();
-                             console.error('Тело ответа ошибки (текст):', errorText);
+                        try {
+                            const errorText = await response.text();
+                            console.error('Тело ответа ошибки (текст):', errorText);
                               errorMessage += ` - ${errorText.substring(0, 100)}...`; // Добавляем часть текста ошибки
-                         } catch (textError) {
-                              console.error('Не удалось получить тело ответа ошибки как текст:', textError);
-                         }
+                        } catch (textError) {
+                            console.error('Не удалось получить тело ответа ошибки как текст:', textError);
+                        }
                     }
                     console.error('PUT запрос не выполнен:', errorMessage);
                     alert(`Не удалось изменить данные: ${errorMessage}`); // Показываем ошибку пользователю
@@ -193,52 +283,14 @@
         // Вызываем функцию init при загрузке страницы
         window.onload = init;
     </script>
-
-                    <!-- <div class="input-group">
-                        <label for="age">Возраст</label>
-                        <input type="number" id="age" name="age" min="16" max="99" required>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="personality">Тип личности</label>
-                        <select id="personality" name="personality" required>
-                            <option value="">Выберите тип</option>
-                            <option value="introvert">Интроверт</option>
-                            <option value="extrovert">Экстраверт</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="sociophobia">Умение готовить</label>
-                        <select id="sociophobia" name="sociophobia" required>
-                            <option value="">Выберите вариант</option>
-                            <option value="yes">Да</option>
-                            <option value="no">Нет</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label for="sociophobia">Добрый/Злой</label>
-                        <select id="sociophobia" name="sociophobia" required>
-                            <option value="">Выберите вариант</option>
-                            <option value="yes">Добрый</option>
-                            <option value="no">Злой</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label for="sociophobia">Знак зодиака</label>
-                        <select id="sociophobia" name="sociophobia" required>
-                            <option value="">Выберите вариант</option>
-                            <option value="yes">Реально..?</option>
-                            <option value="no">Не страдай фигней пж..</option>
-                        </select>
-                    </div> -->
-
             </div>
             <div style="display: flex; align-items: center; flex-direction: column;">
                 <h2 class="myapplications">Мои заявки</h2>
             </div>
-            <div>
-                {% if applications %}
+            <div style="display: flex; align-items: center; flex-direction: column; margin-top: 20px;">
+                <h2>Заявки на переселение</h2>
+            </div>
+            {% if applications %}
                 <div class="list-group">
                     {% for app in applications %}
                         <div class="list-group-item" style="margin-bottom: 10px; padding: 10px; border-radius: 5px; background-color: #f8f9fa; display: flex;
@@ -258,14 +310,41 @@
                             <p><strong>Комната ID:</strong> {{ app.room_id }}</p>
                             <textarea class="form-control" rows="1" readonly>{{ app.comment if app.comment else 'Комментарий отсутствует' }}</textarea>
                         </div>
-                {% endfor %}
+                    {% endfor %}
                 </div>
                 {% else %}
-                <p>У студента нет активных заявок на переселение.</p>
+                <div style="text-align: center; margin-top: 20px;">
+                <p>У вас нет активных заявок на переселение.</p>
+                </div>
                 {% endif %}
-            </div>
-        </div>
 
+            <div style="display: flex; align-items: center; flex-direction: column; margin-top: 20px;">
+                <h2>Заявки на выселение</h2>
+            </div>
+            {% if applications_eviction %}
+                <div class="list-group">
+                    {% for app in applications_eviction %}
+                        <div class="gmemgom" style="height: 20vh; margin-bottom: 10px; padding: 10px; border-radius: 5px; background-color: #f8f9fa; display: flex;
+                            flex-direction: column; align-items: center;">
+                            <h5>Заявка № {{ app.id }}</h5>
+                            {% if app.status == '0' %}
+                                    <p style="color: orange;"><strong>Статус:</strong> Ожидает подтверждения</p>
+                            {% elif app.status == '1' %}
+                                    <p style="color: green;"><strong>Статус:</strong> Подтверждено</p>
+                            {% elif app.status == '2' %}
+                                    <p style="color: red;"><strong>Статус:</strong> Отклонено</p>
+                            {% else %}
+                                    <p style="color: gray;"><strong>Статус:</strong> Неизвестный статус</p>
+                            {% endif %}
+                            <textarea class="form-control" rows="1" readonly>{{ app.comment if app.comment else 'Комментарий отсутствует' }}</textarea>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align: center; margin-top: 20px;">
+                <p>У вас нет активных заявок на выселение.</p>
+                </div>
+                {% endif %}
     </div>
 
     <!-- <script>

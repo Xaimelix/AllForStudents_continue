@@ -136,6 +136,7 @@ body {
 .form-control {
             width: 50%; /* Ширина текстового поля на всю ширину родительского элемента */
             height: 20vh;
+            resize: none;
             margin-top: 5px; /* Отступ сверху от текста */
             border-radius: 5px; /* Скругленные углы */
             border: 1px solid #ccc; /* Рамка вокруг текстового поля */

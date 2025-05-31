@@ -1,6 +1,7 @@
+import datetime
 import os
 
-from flask import Flask, redirect, render_template, jsonify, request
+from flask import Flask, json, redirect, render_template, jsonify, request
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from data import db_session
 from data.student import Student
@@ -11,11 +12,12 @@ from data.studentsANDtags import StudentAndTag
 from form.loginform import LoginForm
 from form.registrationform import RegistrationForm
 from flasgger import Swagger
-from api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource
+from api.resources import Application_request, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource, Application_Eviction
 from api.routes import initialize_routes
 from flask_restful import Api
 from functools import wraps
 from flask import abort
+import requests
 from flask_cors import CORS
 import requests
 import os
@@ -149,8 +151,17 @@ def myself():
                 'student_id': req.student_id,
                 'comment': req.comment
             })
+        student_applications_eviction = db_sess.query(Application_Eviction).filter(Application_Eviction.student_id == current_user.id, Application_Eviction.status == '0').all()
+        applications_eviction_data = []
+        for req in student_applications_eviction:
+            applications_eviction_data.append({
+                'id': req.id,
+                'status': req.status,
+                'student_id': req.student_id,
+                'comment': req.comment
+            })
 
-        return render_template('aboutuser.html', item=current_user, server_url=server_base_url, applications=applications_data)
+        return render_template('aboutuser.html', item=current_user, server_url=server_base_url, applications=applications_data, applications_eviction=applications_eviction_data)
     except Exception as e:
             # Обработка ошибок при загрузке данных
             print(f"Ошибка при загрузке профиля студента с ID {current_user.id}: {e}")
@@ -457,8 +468,13 @@ def auto():
     if not server_base_url.endswith('/'):
         server_base_url += '/'
     rooms = db_sess.query(Room).filter(Room.cur_cnt_student < Room.max_cnt_student, Room.sex == current_user.sex).all()
-    for i in rooms:
-        print(i.id)
+    requests.post(
+        f'{server_base_url}api/application_requests', json={
+            'student_id': current_user.id,
+            'date_entr': datetime.datetime.now().strftime('%Y-%m-%d'),
+            'status': '0',
+            'room_id': rooms[0].id if rooms else None,
+        })
     return redirect('/me')
 
 
