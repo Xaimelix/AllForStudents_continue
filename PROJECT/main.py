@@ -200,10 +200,6 @@ def hostel():
                           free_places=free_places_by_hostel)
 
 
-@app.route('/filter')
-def room():
-    return (render_template('application.html'))
-
 
 @app.route('/rooms')
 def test_rooms():
@@ -478,6 +474,7 @@ def auto():
     return redirect('/me')
 
 
+@app.route('/how')
 def how_to_apply():
     """
     Страница с инструкцией по подаче заявки на общежитие

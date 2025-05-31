@@ -27,8 +27,8 @@
             </div>
             <div class="nav-items">
                 <a href="/about" class="nav-item">Про сайт</a>
-                <a href="#" class="nav-item">Как забронировать?</a>
-                <a href="#" class="nav-item">Общежития</a> 
+                <a href="/how" class="nav-item">Как забронировать?</a>
+                <a href="/hostels" class="nav-item">Общежития</a> 
                 <a href="/help" class="nav-item">Помощь</a>
             </div>
             <a href="/me" class="userlogo">
@@ -41,9 +41,6 @@
           <div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
             <div class="flex flex-wrap justify-between gap-6 p-8">
               <div class="flex min-w-96 flex-col gap-6">
-                <p class="text-[#1c180d] tracking-light text-[48px] font-bold leading-tight">
-                  Добро пожаловать, {{ current_user.name }}!
-                </p>
                 <p class="text-[#9e8747] text-lg font-normal leading-normal">
                   Выберите, как вы хотите получить общежитие.
                 </p>
@@ -56,7 +53,7 @@
                 >
                   <span class="truncate">Запросить автоматическое распределение</span>
                 </a>
-                <a href="/filter"
+                <a href="/hostels"
                   class="flex min-w-[140px] max-w-[600px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-16 px-8 bg-[#f4f0e6] text-[#1c180d] text-xl font-bold leading-normal tracking-[0.015em] grow"
                 >
                   <span class="truncate">Просмотреть и фильтровать доступные номера</span>
