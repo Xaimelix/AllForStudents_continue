@@ -7,7 +7,7 @@ from data import db_session
 import datetime
 import time
 
-load_dotenv("config.env")
+load_dotenv("PROJECT/config.env")
 API_TOKEN = os.getenv('API_TOKEN')
 bot = telebot.TeleBot(API_TOKEN)
 

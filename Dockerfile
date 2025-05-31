@@ -15,4 +15,4 @@ COPY ./PROJECT/ .
 
 EXPOSE 80
 
-CMD ["python", "main.py", "--port", "80"]
+CMD ["python", "run.py", "--port", "80"]

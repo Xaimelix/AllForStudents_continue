@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="{{url_for('static', filename='CSS/aboutuser.css') }}">
     <style>
        .btn-eviction {
-            background-color: #fffe27;      /* Ярко-жёлтый фон */
-            color: #222;                   /* Тёмный текст */
-            border: 2px solid #222;        /* Чёрная рамка */
-            border-radius: 8px;            /* Скругление углов */
+            background-color: #fffe27; 
+            color: #222;  
+            border: 2px solid #222;
+            border-radius: 8px;
             padding: 10px 24px;
             font-weight: bold;
             font-size: 16px;
@@ -18,7 +18,7 @@
             transition: background 0.2s, color 0.2s;
         }
         .btn-eviction:hover {
-            background-color: #ffd60a;     /* Более насыщённый жёлтый при наведении */
+            background-color: #ffd60a;
             color: #000;
         }
         .tooltip-container {
@@ -80,9 +80,7 @@
                         <label >Вы проживаете в общежитии</label>
                         <input type="text" id="hostel" name="hostel" value="{{item.hostel_id}}" readonly placeholder="Нет общежития">
                         <script>
-                            // Получаем элемент input для общежития
                             const hostelInput = document.getElementById('hostel');
-                            // Если значение есть, убираем placeholder
                             const roomId = {{ item.room_id }};
                             async function fetchHostelInfo() {
                                 try {

@@ -17,7 +17,7 @@
             </div>
             <div class="userlogo">
                 <div class="head"></div>
-                <a href="/" class="what">Вернуться</a> <!-- Добавляем ссылку -->
+                <a href="/" class="what">Вернуться</a>
             </div>
             
         </nav>
@@ -119,11 +119,9 @@
         document.querySelector('.profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Сохраняем данные в localStorage
             const fullName = document.getElementById('fullname').value;
             localStorage.setItem('userFullName', fullName);
             
-            // Перенаправляем на главную страницу
             window.location.href = "../../templates/basepage.html";
         });
     </script>

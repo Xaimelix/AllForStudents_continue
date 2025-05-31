@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход в аккаунт</title>
     <style>
-        /* Сохраняем предыдущие стили с небольшими изменениями */
         * {
             margin: 0 auto;
             padding: 0;
@@ -148,7 +147,6 @@
             color: white;
         }
 
-        /* Adjust styles for small screens like mobile devices */
         @media (max-width: 480px) {
             .login-box {
                 padding: 25px;
@@ -247,9 +245,6 @@
 
             showMessage('Вход выполнен успешно!', 'success');
             form.reset();
-            
-            // Перенаправление на другую страницу (пример)
-            // setTimeout(() => window.location.href = '/profile', 1000);
         });
 
         function showMessage(text, type) {
@@ -258,7 +253,6 @@
             messageDiv.style.display = 'flex';
         }
 
-        // Автозаполнение при наличии сохраненного email
         window.addEventListener('load', () => {
             const rememberedEmail = localStorage.getItem('rememberedUser');
             if (rememberedEmail) {

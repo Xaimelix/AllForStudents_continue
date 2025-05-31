@@ -25,7 +25,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from data.help_requests import HelpRequests
 
-load_dotenv('config.env')  # загружаем переменные из .env
+load_dotenv('config.env')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 login_manager = LoginManager()
@@ -46,9 +46,6 @@ def forbidden(e):
     return render_template('403.html', 
                         error="Доступ запрещен. Необходимы права администратора."), 403
 
-
-    # Добавьте эту строку перед инициализацией Swagger
-#app.config['SWAGGER_URL'] = '/apidocs' # URL для Swagger UI
 
 swagger = Swagger(app, template={
         "swagger": "2.0",
@@ -90,14 +87,11 @@ swagger = Swagger(app, template={
     })
 
 
-# Инициализация Flask-RESTful
 api = Api(app)
 
-# Инициализация маршрутов API
 initialize_routes(api)
 
 def init_db():
-    # Используйте относительный путь от корня проекта
     db_path = os.path.join(os.path.dirname(__file__), "db/database.db")
     print(f"Initializing database at: {db_path}")
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
@@ -170,13 +164,6 @@ def myself():
         # Обязательно закрываем сессию базы данных
         db_sess.close()
 
-
-#@app.route('/apidocs')
-#@admin_required
-#def swagger_ui():
-#    return render_template('flasgger_ui.html')
-
-
 # страница общежитий
 @app.route('/hostels')
 def hostel():
@@ -198,7 +185,6 @@ def hostel():
     return render_template('finding.html', 
                           hostels=hostels, 
                           free_places=free_places_by_hostel)
-
 
 
 @app.route('/rooms')
@@ -258,7 +244,6 @@ def book_room(id):
 def about():
     return render_template('about.html')
 
-# регистрация
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
     if current_user.is_authenticated:
