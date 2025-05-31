@@ -325,6 +325,17 @@ def admin_profile():
     return render_template('admin_profile.html', user=current_user)
 
 
+@app.route('/application_eviction', methods=['GET', 'POST'])
+@admin_required
+def applications_eviction():
+    db_sess = db_session.create_session()
+    server_base_url = request.url_root
+    if not server_base_url.endswith('/'):
+        server_base_url += '/'
+    # applications = db_sess.query(Application_Eviction).all()
+    return render_template('application_eviction.html', user=current_user, server_url=server_base_url)
+
+
 @app.route('/admin_support_reply', methods=['GET', 'POST'])
 @admin_required
 def admin_support_reply():

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    <title>Зпросы на выселение</title>
+    <title>Запросы на выселение</title>
     <link href="/static/styles.css" rel="stylesheet" type="text/css"></link>
     <style>
         #applicationRequestsList {
@@ -99,10 +99,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/apidocs">Редактирование БД</a>
                     </li>
-                    <div class="nav-items">
-                        <a href="/add_hostels" class="nav-item">Добавить общежитие</a>
-                        <a href="/add_rooms" class="nav-item">Добавить ком  нату</a>
-                    </div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/add_rooms">Добавить комнаты</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/add_hostels">Добавить общежитие</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/applications">Заявки на заселение</a>
                     </li>
@@ -119,5 +121,252 @@
             </div>
         </div>
     </nav>
+    <div class="container mt-3">
+        <h2>Заявки на выселение (статус 0 - на рассмотрении, 1 - принята, 2 - отклонена)</h2>
+        <div id="applicationRequestsList"> 
+            <p>Загрузка заявок...</p> </div>
+    </div>
+    <script>
+    // URL API эндпоинта для получения всех заявок
+    const serverBaseUrl = "{{ server_url }}"; 
+    const apiUrl = `${serverBaseUrl}api/application_eviction`; // URL для получения всех заявок
+    
+    // URL API эндпоинта для обновления статуса заявки (PUT запрос по ID)
+    // Он должен соответствовать маршруту ApplicationRequestItemResource: /api/application_requests/<int:request_id>
+    const updateStatusApiUrl_eviction = `${serverBaseUrl}api/application_eviction/`; // Базовый URL, к которому добавим ID заявки
+    const updateStatusApiUrl_student = `${serverBaseUrl}api/students/`; // Базовый URL для изменения комнаты, к которому добавим ID заявки
+    const updateStatusApiUrl_room = `${serverBaseUrl}api/rooms/`; // Базовый URL для получения комнаты по ID
+
+
+    // Функция для получения и отображения заявок со статусом 0
+    async function fetchAndDisplayPendingApplicationRequests() {
+        const applicationRequestsListElement = document.getElementById('applicationRequestsList');
+        if (!applicationRequestsListElement) {
+            console.error("HTML элемент с ID 'applicationRequestsList' не найден на странице!");
+            return;
+        }
+
+        applicationRequestsListElement.innerHTML = '<p>Загрузка заявок...</p>';
+
+        try {
+            const response = await fetch(apiUrl, { method: 'GET', headers: { 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+            const data = await response.json();
+
+            const pendingRequests = Array.isArray(data.requests)
+                ? data.requests.filter(r => r.status === '0')
+                : [];
+
+            applicationRequestsListElement.innerHTML = pendingRequests.length
+                ? ''
+                : '<p>Нет заявок на выселение в статусе "0".</p>';
+
+            for (const request of pendingRequests) {
+                const requestElement = document.createElement('div');
+                requestElement.classList.add('application-request-item');
+                requestElement.dataset.requestId = request.id;
+                requestElement.dataset.roomId = request.room_id;
+                requestElement.dataset.studentId = request.student_id;
+
+                // Получаем асинхронно данные
+                let roomData = {};
+                let studentData = {};
+                try {
+                    studentData = await fetch(`${updateStatusApiUrl_student}${request.student_id}`).then(res => res.ok ? res.json() : {});
+                } catch (fetchErr) {
+                    console.error('Ошибка получения доп. данных:', fetchErr);
+                }
+                console.log('studentData:', studentData['student']);
+                let room_id = null;
+                if (studentData['student'] && studentData['student']['room_id']) {
+                    room_id = studentData['student']['room_id'];
+                }
+                requestElement.dataset.roomId = room_id;
+                console.log('room_id:', room_id);
+                try {
+                    roomData = await fetch(`${updateStatusApiUrl_room}${studentData['student']['room_id']}`).then(res => res.ok ? res.json() : {});
+                } catch (fetchErr) {
+                    console.error('Ошибка получения доп. данных:', fetchErr);
+                }
+
+                let room = roomData['room'] || {};
+                let student = studentData['student'] || {};
+                requestElement.innerHTML = `
+                    <div class="request-info" style="max-width: 30%;">
+                        <h4>Заявка № ${request.id}</h4>
+                        <p><strong>ID:</strong> ${request.id}</p>
+                        <p><strong>Статус:</strong> ${request.status}</p>
+                        <p><strong>Дата въезда:</strong> ${request.date_entr || 'Не указана'}</p>
+                        <p><strong>Дата выезда:</strong> ${request.date_exit || 'Не указана'}</p>
+                        <p><strong>Комментарий:</strong></p>
+                        <textarea placeholder="Все хорошо"></textarea>
+                    </div>
+                    <div class="student-info" style="max-width: 30%;">
+                        <h4>Студент</h4>
+                        <p><strong>ID:</strong> ${request.student_id}</p>
+                        <p><strong>Имя:</strong> ${student.name || 'Не указано'}</p>
+                        <p><strong>Фамилия:</strong> ${student.surname || 'Не указано'}</p>
+                        <p><strong>Пол:</strong> ${
+                            room.sex === true ? 'мужской' : room.sex === false ? 'женский' : 'Не указан'
+                        }</p>
+                        <p><strong>Курс:</strong> ${student.course || 'Не указан'}</p>
+                    </div>
+                    <div class="room-info" style="max-width: 30%;">
+                        <h4>Комната выселения</h4>
+                        <p><strong>ID:</strong> ${room['id']}</p>
+                        <p><strong>Макс. жильцов:</strong> ${room.max_cnt_student || 'Не указано'}</p>
+                        <p><strong>Тек. жильцов:</strong> ${room.cur_cnt_student || 'Не указано'}</p>
+                        <p><strong>Пол:</strong> ${
+                            room.sex === true ? 'мужская' : room.sex === false ? 'женская' : 'Не указан'
+                        }</p>
+                        <p><strong>Этаж:</strong> ${room.floor || 'Не указан'}</p>
+                        <p><strong>Корпус ID общежития:</strong> ${room.hostel_id || 'Не указан'}</p>
+                    </div>
+                    <div class="request-actions">
+                        <button class="approve-button" data-request-id="${request.id}">Одобрить</button>
+                        <button class="reject-button" data-request-id="${request.id}">Отклонить</button>
+                    </div>
+                `;
+
+                applicationRequestsListElement.appendChild(requestElement);
+            }
+
+            attachButtonListeners(applicationRequestsListElement);
+
+        } catch (error) {
+            console.error('Ошибка при загрузке заявок:', error);
+            applicationRequestsListElement.innerHTML = `<p>Ошибка: ${error.message}</p>`;
+        }
+    }
+
+    // Функция для добавления обработчиков кликов на кнопки
+    function attachButtonListeners(listElement) {
+         // Используем переданный listElement для поиска кнопок внутри него
+        const approveButtons = listElement.querySelectorAll('.approve-button');
+        approveButtons.forEach(button => {
+            // Удаляем старые слушатели, чтобы избежать их дублирования при повторных вызовах fetchAndDisplayPendingApplicationRequests
+            button.removeEventListener('click', handleApproveClick);
+            button.addEventListener('click', handleApproveClick);
+        });
+
+        const rejectButtons = listElement.querySelectorAll('.reject-button');
+        rejectButtons.forEach(button => {
+             // Удаляем старые слушатели
+            button.removeEventListener('click', handleRejectClick);
+            button.addEventListener('click', handleRejectClick);
+        });
+    }
+
+    // Функции для обработки кликов по кнопкам Одобрить/Отклонить
+    async function handleApproveClick(event) {
+        const requestId = event.target.dataset.requestId;
+        const requestElement = event.target.closest('.application-request-item');
+        const room_id = requestElement.dataset.roomId;
+        const student_id = requestElement.dataset.studentId;
+
+        console.log(`Approve clicked. Request ID: ${requestId}, Room ID: ${student_id}`);
+
+        try {
+            // 1. Получаем данные комнаты
+            const getRoomResponse = await fetch(`${updateStatusApiUrl_room}${room_id}`);
+            if (!getRoomResponse.ok) {
+                throw new Error(`Ошибка получения комнаты: ${await getRoomResponse.text()}`);
+            }
+            const roomData = await getRoomResponse.json();
+
+            // 2. Получаем данные студента
+            const getStudentResponse = await fetch(`${serverBaseUrl}api/students/${student_id}`);
+            if (!getStudentResponse.ok) {
+                throw new Error(`Ошибка получения студента: ${await getStudentResponse.text()}`);
+            }
+            const studentData = await getStudentResponse.json();
+
+            // 4. Обновляем статус заявки
+            const approveResponse = await fetch(`${updateStatusApiUrl_eviction}${requestId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: '1' })
+            });
+            if (!approveResponse.ok) {
+                throw new Error(`Ошибка при обновлении статуса: ${await approveResponse.text()}`);
+            }
+
+            // 5. Уменьшаем количество жильцов
+            const updateRoomResponse = await fetch(`${updateStatusApiUrl_room}${room_id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cur_cnt_student: Number(roomData['room'].cur_cnt_student) - 1
+                })
+            });
+            if (!updateRoomResponse.ok) {
+                throw new Error(`Ошибка при обновлении комнаты: ${await updateRoomResponse.text()}`);
+            }
+
+            // 6. Удаляем студента из комнаты
+            const updateStudentResponse = await fetch(`${updateStatusApiUrl_student}${student_id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_id: null }) // Удаляем комнату у студента
+            });
+
+            requestElement.remove();
+            alert(`Заявка ${requestId} одобрена и студет выселен.`);
+        } catch (error) {
+            console.error(error);
+            alert(`Ошибка обработки заявки: ${error.message}`);
+        }
+    }
+
+    async function handleRejectClick(event) {
+        const requestId = event.target.dataset.requestId; // Получаем ID заявки из атрибута data-request-id
+        console.log(`Нажата кнопка "Отклонить" для заявки ID: ${requestId}`);
+        const comment_admin = event.target.closest('.application-request-item').querySelector('textarea').value; // Получаем комментарий из текстового поля
+        if (comment_admin.trim() === '') { // Проверяем, что комментарий не пустой
+            alert('Пожалуйста, введите комментарий перед отклонением заявки.');
+            return; // Прекращаем выполнение функции, если комментарий пустой
+        }
+        console.log(`Комментарий администратора: ${comment_admin}`); // Логгируем комментарий
+        try {
+            // Отправляем PUT запрос к API для изменения статуса заявки на "2" (отклонено)
+            console.log(`Отправка PUT запроса для отклонения заявки ID ${requestId}`); // Логгирование запроса
+            const response = await fetch(`${updateStatusApiUrl_eviction}${requestId}`, { // Используем базовый URL + ID
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json' // Указываем, что отправляем JSON
+                },
+                body: JSON.stringify({ status: '2', comment: comment_admin }) // Отправляем JSON с новым статусом '2'
+            });
+
+            console.log(`Получен ответ на PUT запрос для отклонения заявки ID ${requestId}. Статус: ${response.status}`); // Логгирование ответа
+
+            // Проверяем, успешен ли был запрос
+            if (response.ok) {
+                console.log(`Заявка ${requestId} отклонена.`);
+                // Обновить интерфейс: удалить этот блок заявки с страницы
+                const requestElement = event.target.closest('.application-request-item'); // Находим родительский элемент заявки
+                 if (requestElement) {
+                     requestElement.remove(); // Удаляем элемент
+                 }
+                  alert(`Заявка ${requestId} отклонена.`); // Оповещение пользователя
+            } else {
+                 // Получаем сообщение об ошибке от сервера
+                const errorData = await response.json();
+                const errorMessage = errorData.message || `Ошибка HTTP: ${response.status}`;
+                console.error(`Ошибка при отклонении заявки ${requestId}: ${errorMessage}`);
+                 alert(`Не удалось отклонить заявку ${requestId}. ${errorMessage}`); // Показываем ошибку пользователю
+            }
+
+        } catch (error) {
+            console.error('Ошибка при выполнении запроса на отклонение:', error);
+             alert(`Произошла ошибка при отклонении заявки ${requestId}: ${error.message}`); // Показываем ошибку пользователю
+        }
+    }
+
+
+    // Вызываем функцию для загрузки и отображения заявок со статусом 0, когда страница загрузится
+    document.addEventListener('DOMContentLoaded', fetchAndDisplayPendingApplicationRequests);
+
+    </script>
 </body>
 </html>

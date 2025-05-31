@@ -188,7 +188,9 @@
                         <p><strong>ID:</strong> ${request.student_id}</p>
                         <p><strong>Имя:</strong> ${student.name || 'Не указано'}</p>
                         <p><strong>Фамилия:</strong> ${student.surname || 'Не указано'}</p>
-                        <p><strong>Пол:</strong> ${student.sex || 'Не указан'}</p>
+                        <p><strong>Пол:</strong> ${
+                            room.sex === true ? 'мужской' : room.sex === false ? 'женский' : 'Не указан'
+                        }</p>
                         <p><strong>Курс:</strong> ${student.course || 'Не указан'}</p>
                     </div>
                     <div class="room-info" style="max-width: 30%;">
@@ -196,7 +198,9 @@
                         <p><strong>ID:</strong> ${request.room_id}</p>
                         <p><strong>Макс. жильцов:</strong> ${room.max_cnt_student || 'Не указано'}</p>
                         <p><strong>Тек. жильцов:</strong> ${room.cur_cnt_student || 'Не указано'}</p>
-                        <p><strong>Пол:</strong> ${room.sex || 'Не указан'}</p>
+                        <p><strong>Пол:</strong> ${
+                            room.sex === true ? 'мужская' : room.sex === false ? 'женская' : 'Не указан'
+                        }</p>
                         <p><strong>Этаж:</strong> ${room.floor || 'Не указан'}</p>
                         <p><strong>Корпус ID общежития:</strong> ${room.hostel_id || 'Не указан'}</p>
                     </div>
@@ -218,7 +222,6 @@
     }
 
     // Функция для добавления обработчиков кликов на кнопки
-    // ФУНКЦИЯ ТЕПЕРЬ ПРИНИМАЕТ АРГУМЕНТ listElement
     function attachButtonListeners(listElement) {
          // Используем переданный listElement для поиска кнопок внутри него
         const approveButtons = listElement.querySelectorAll('.approve-button');
@@ -291,6 +294,13 @@
             if (!updateRoomResponse.ok) {
                 throw new Error(`Ошибка при обновлении комнаты: ${await updateRoomResponse.text()}`);
             }
+
+            // 6. Записываем студента в комнату
+            const updateStudentResponse = await fetch(`${serverBaseUrl}api/students/${student_id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_id: room_id })
+            });
 
             requestElement.remove();
             alert(`Заявка ${requestId} одобрена и жильцы обновлены.`);

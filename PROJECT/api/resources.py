@@ -447,7 +447,7 @@ class ApplicationEvictionListResource(Resource):
                 result.append({
                     'id': request.id,
                     'status': request.status,
-                    'date': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
+                    'date': request.date.strftime('%Y-%m-%d') if request.date else None,
                     'student_id': request.student_id,
                     'comment': request.comment
                 })
@@ -577,7 +577,7 @@ class ApplicationEvictionItemResource(Resource):
             result = {
                 'id': request.id,
                 'status': request.status,
-                'date': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
+                'date': request.date.strftime('%Y-%m-%d') if request.date else None,
                 'student_id': request.student_id,
                 'comment': request.comment
             }
@@ -1081,7 +1081,6 @@ class StudentItemResource(Resource):
             # Это позволяет делать частичные обновления (например, менять только курс)
 
             if 'login' in args and args['login'] is not None:
-                # TODO: Добавьте проверку на уникальность логина, если он был изменен
                 student_to_update.login = args['login']
 
             if 'name' in args and args['name'] is not None:
@@ -1091,7 +1090,6 @@ class StudentItemResource(Resource):
                 student_to_update.surname = args['surname']
 
             if 'room_id' in args and args['room_id'] is not None:
-                # TODO: Добавьте проверку на существование комнаты с таким ID
                 student_to_update.room_id = args['room_id']
             # Специальная обработка для возможности установки room_id в None
             elif 'room_id' in args and args['room_id'] is None:
