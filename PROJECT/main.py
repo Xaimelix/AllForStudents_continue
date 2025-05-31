@@ -69,6 +69,10 @@ swagger = Swagger(app, template={
                 "description": "Операции с заявками"
             },
             {
+                "name": "Application Eviction",
+                "description": "Операции с заявками на выселение"
+            },
+            {
                 "name": "Students",
                 "description": "Операции со студентами"
             },

@@ -20,6 +20,7 @@ class Student(SqlAlchemyBase, UserMixin):
 
     room = sqlalchemy.orm.relationship('Room', back_populates='students')
     application_request = sqlalchemy.orm.relationship('Application_request', back_populates='student')
+    application_eviction = sqlalchemy.orm.relationship('Application_Eviction', back_populates='student')
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password, method='pbkdf2')

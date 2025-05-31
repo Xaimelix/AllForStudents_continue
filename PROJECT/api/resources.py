@@ -3,6 +3,7 @@ from flask import Flask, send_file
 from data.db_session import create_session
 from sqlalchemy import func
 from data.application_request import Application_request
+from data.application_eviction import Application_Eviction
 from data.student import Student
 from data.room import Room
 from data.hostel import Hostel
@@ -390,6 +391,353 @@ class ApplicationRequestItemResource(Resource):
             return {'message': f'Ошибка при обновлении статуса заявки с ID {request_id}: {e}'}, 500
         finally:
             db_sess.close()
+
+
+
+application_eviction = reqparse.RequestParser()
+application_eviction.add_argument('status', type=str, required=True, help='Статус заявки обязателен', location=['json', 'form'])
+application_eviction.add_argument('student_id', type=int, required=True, help='ID студента обязателен', location=['json', 'form'])
+application_eviction.add_argument('date', type=str, help='Дата (YYYY-MM-DD)', location=['json', 'form'])
+
+
+class ApplicationEvictionListResource(Resource):
+    def get(self):
+        """Получение списка всех заявок.
+        ---
+        tags:
+          - Application Eviction
+        responses:
+          200:
+            description: Список заявок
+            schema:
+              type: object
+              properties:
+                requests:
+                  type: array
+                  items:
+                    $ref: '#/definitions/ApplicationEviction'
+          500:
+            description: Ошибка при получении списка заявок
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        definitions: # Определение схемы заявки (можно вынести в отдельный файл схем)
+          ApplicationRequest:
+            type: object
+            properties:
+              id:
+                type: integer
+              status:
+                type: string
+              date:
+                type: string
+                format: date
+              student_id:
+                type: integer
+              comment:
+                type: string
+        """
+        db_sess = create_session()
+        try:
+            requests = db_sess.query(Application_Eviction).all()
+            result = []
+            for request in requests:
+                result.append({
+                    'id': request.id,
+                    'status': request.status,
+                    'date': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
+                    'student_id': request.student_id,
+                    'comment': request.comment
+                })
+            return {'requests': result}, 200
+        except Exception as e:
+            return {'message': f'Ошибка при получении заявок: {e}'}, 500
+        finally:
+            db_sess.close()
+
+    def post(self):
+        """Создание новой заявки.
+        ---
+        tags:
+          - Application Eviction
+        parameters:
+          - in: body
+            name: body
+            required: true
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                student_id:
+                  type: integer
+        responses:
+          201:
+            description: Заявка успешно создана
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                request_id:
+                  type: integer
+          400:
+            description: Неверный формат данных или даты
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при создании заявки
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        args = applicationEviction_put_parser.parse_args()
+
+        date = None
+
+        try:
+            if args['date']:
+                date = datetime.strptime(args['date'], '%Y-%m-%d').date()
+        except ValueError:
+            return {'message': 'Неверный формат даты. Используйте<ctrl97>-MM-DD.'}, 400
+
+        db_sess = create_session()
+        try:
+            new_request = Application_Eviction(
+                status=args['status'],
+                date=date,
+                student_id=args['student_id']
+            )
+            db_sess.add(new_request)
+            db_sess.commit()
+            return {'message': 'Заявка успешно создана!', 'request_id': new_request.id}, 201
+        except Exception as e:
+            db_sess.rollback()
+            return {'message': f'Ошибка при создании заявки: {e}'}, 500
+        finally:
+            db_sess.close()
+
+
+applicationEviction_put_parser = reqparse.RequestParser()
+# Указываем, что ожидаем 'status' в теле запроса в формате JSON
+applicationEviction_put_parser.add_argument('status', type=str, help='Статус заявки обязателен', location=['json', 'form'])
+applicationEviction_put_parser.add_argument('student_id', type=int, help='ID студента обязателен', location=['json', 'form'])
+applicationEviction_put_parser.add_argument('date', type=str, help='Дата  (YYYY-MM-DD)', location=['json', 'form'])
+applicationEviction_put_parser.add_argument('comment', type=str, help='Причина отклонения', location=['json', 'form'])
+
+
+class ApplicationEvictionItemResource(Resource):
+    def get(self, request_id):
+        """Получение информации о заявке по ID.
+        ---
+        tags:
+          - Application Eviction
+        parameters:
+          - name: request_id
+            in: path
+            type: integer
+            required: true
+            description: ID заявки
+        responses:
+          200:
+            description: Информация о заявке
+            schema:
+              $ref: '#/definitions/ApplicationEviction'
+          404:
+            description: Заявка не найдена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при получении заявки
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        db_sess = create_session()
+        try:
+            request = db_sess.query(Application_Eviction).filter(Application_Eviction.id == request_id).first()
+            if not request:
+                return {'message': f'Заявка с ID {request_id} не найдена'}, 404
+
+            result = {
+                'id': request.id,
+                'status': request.status,
+                'date': request.date_entr.strftime('%Y-%m-%d') if request.date_entr else None,
+                'student_id': request.student_id,
+                'comment': request.comment
+            }
+            return {'request': result}, 200
+
+        except Exception as e:
+            return {'message': f'Ошибка при получении заявки: {e}'}, 500
+        finally:
+            db_sess.close()
+
+    def delete(self, request_id):
+        """Удаление заявки по ID.
+        ---
+        tags:
+          - Application Eviction
+        parameters:
+          - name: request_id
+            in: path
+            type: integer
+            required: true
+            description: ID заявки
+        responses:
+          200:
+            description: Заявка успешно удалена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          404:
+            description: Заявка не найдена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при удалении заявки
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        db_sess = create_session()
+        try:
+            request_to_delete = db_sess.query(Application_Eviction).filter(Application_Eviction.id == request_id).first()
+            if not request_to_delete:
+                return {'message': f'Заявка с ID {request_id} не найдена'}, 404
+
+            db_sess.delete(request_to_delete)
+            db_sess.commit()
+            return {'message': f'Заявка с ID {request_id} успешно удалена'}, 200
+        except Exception as e:
+            db_sess.rollback()
+            return {'message': f'Ошибка при удалении заявки с ID {request_id}: {e}'}, 500
+        finally:
+            db_sess.close()
+
+    def put(self, request_id):
+        """Обновление статуса заявки по ID.
+        ---
+        tags:
+          - Application Eviction
+        parameters:
+          - name: request_id
+            in: path
+            type: integer
+            required: true
+            description: ID заявки для обновления
+          - name: body
+            in: body
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: Новый статус заявки ('1' для одобрения, '2' для отклонения)
+                comment:
+                  type: string
+                  description: Причина отклонения (если статус '2')
+              required:
+                - status
+        responses:
+          200:
+            description: Статус заявки успешно обновлен
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          404:
+            description: Заявка не найдена
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          400:
+            description: Неверный формат данных или отсутствует статус
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при обновлении статуса заявки
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        args = applicationEviction_put_parser.parse_args(strict=False) # Используем новый парсер для статуса, strict=True для игнорирования других полей
+        new_status = args.get('status') # Получаем новый статус
+        new_student_id = args.get('student_id') # Получаем новый student_id
+        new_date = args.get('date') # Получаем новую дату 
+        comment = args.get('comment') # Получаем причину отклонения
+        # Проверяем, что новый статус указан
+
+        if new_status is None:
+            return {'message': 'В теле запроса должен быть указан новый статус ("status").'}, 400
+
+        # TODO: Добавь валидацию статуса, чтобы принимать только '1' или '2'
+        if new_status not in ['1', '2']:
+             return {'message': 'Неверное значение статуса. Допустимы только "1" (одобрено) или "2" (отклонено).'}, 400
+
+
+        db_sess = create_session()
+        try:
+            # Ищем заявку по ID
+            request_to_update = db_sess.query(Application_Eviction).filter(Application_Eviction.id == request_id).first()
+
+            # Если заявка не найдена, возвращаем 404
+            if not request_to_update:
+                return {'message': f'Заявка с ID {request_id} не найдена'}, 404
+
+            # Обновляем статус
+            request_to_update.status = new_status
+            if new_student_id is not None:
+                request_to_update.student_id = new_student_id
+            if new_date is not None:
+                request_to_update.date = datetime.strptime(new_date, '%Y-%m-%d').date()
+            if comment is not None:
+                request_to_update.comment = comment
+            
+
+            # Коммитим изменения
+            db_sess.commit()
+
+            # Возвращаем успешный ответ
+            return {'message': f'Статус заявки с ID {request_id} успешно обновлен на "{new_status}"'}, 200
+
+        except Exception as e:
+            # Откатываем изменения в случае ошибки и возвращаем 500
+            db_sess.rollback()
+            return {'message': f'Ошибка при обновлении статуса заявки с ID {request_id}: {e}'}, 500
+        finally:
+            db_sess.close()
+
 
 # --- Парсер для StudentListResource (для методов POST/PUT) ---
 student_parser = reqparse.RequestParser()
