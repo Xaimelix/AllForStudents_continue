@@ -1,5 +1,5 @@
 from flask_restful import Api
-from .resources import ApplicationRequestsListResource, ApplicationRequestItemResource, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource
+from .resources import ApplicationRequestsListResource, ApplicationRequestItemResource, RoomItemResource, RoomListResource, StudentItemResource, StudentListResource, HostelItemResource, HostelListResource, ReportResource, ApplicationEvictionItemResource, ApplicationEvictionListResource
 
 def initialize_routes(api):
     """Инициализация маршрутов API."""
@@ -9,6 +9,9 @@ def initialize_routes(api):
     api.add_resource(ApplicationRequestsListResource, '/api/application_requests')
     # Связываем ApplicationRequestItemResource с маршрутом с ID
     api.add_resource(ApplicationRequestItemResource, '/api/application_requests/<int:request_id>')
+
+    api.add_resource(ApplicationEvictionListResource, '/api/application_eviction', endpoint='application_eviction')
+    api.add_resource(ApplicationEvictionItemResource, '/api/application_eviction/<int:request_id>', endpoint='application_eviction_by_id')
 
     # Для StudentResource
     api.add_resource(StudentListResource, '/api/students', endpoint='students')

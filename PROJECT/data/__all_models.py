@@ -1,1 +1,1 @@
-from . import student, hostel, room, tag, application_request, studentsANDtags, help_requests
+from . import student, hostel, room, tag, application_request, studentsANDtags, help_requests, application_eviction
