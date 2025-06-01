@@ -34,7 +34,7 @@
    ```bash
    pip install -r requirements.txt
    ```
-5. **Подготовка ключей**
+5. **Подготовка ключей**<br>
    Создайте файл `config.env`
    ```bash
    API_TOKEN=Ваш_ключ_для_бота_в_телеграмм
