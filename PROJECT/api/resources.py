@@ -1,3 +1,4 @@
+import os
 from flask_restful import Resource, reqparse
 from flask import Flask, send_file
 from data.db_session import create_session
@@ -1985,4 +1986,61 @@ class ReportResource(Resource):
         finally:
             db_sess.close()
 
-# TODO: Добавить if на отправку csv файла в зависимости от report_type
+class MakeAdminResource(Resource):
+    def post(self, user_id, admin_key):
+        """
+        Превращение пользователя в администратора.
+        ---
+        tags:
+          - Admin
+        parameters:
+          - name: user_id
+            in: path
+            type: integer
+            required: true
+            description: ID пользователя, которого нужно сделать администратором
+          - Admin Key:
+            in: header
+            type: string
+            required: true
+            description: Ключ администратора для подтверждения операции
+        responses:
+          200:
+            description: Пользователь успешно стал администратором
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          404:
+            description: Пользователь не найден
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+          500:
+            description: Ошибка при превращении пользователя в администратора
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+        """
+        ADMIN_KEY = os.getenv('ADMIN_KEY')
+        db_sess = create_session()
+        try:
+            user = db_sess.query(Student).filter(Student.id == user_id).first()
+            if not user:
+                return {'message': f'Пользователь с ID {user_id} не найден'}, 404
+            if admin_key != ADMIN_KEY:
+                return {'message': 'Неверный ключ администратора'}, 403
+            user.admin = True # Предполагается, что есть поле is_admin в модели User
+            db_sess.commit()
+            return {'message': f'Пользователь с ID {user_id} теперь является администратором'}, 200
+
+        except Exception as e:
+            db_sess.rollback()
+            return {'message': f'Ошибка при превращении пользователя в администратора: {e}'}, 500
+        finally:
+            db_sess.close()

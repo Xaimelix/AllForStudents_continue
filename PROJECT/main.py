@@ -25,7 +25,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from data.help_requests import HelpRequests
 
-load_dotenv('config.env')
+# load_dotenv('config.env')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 login_manager = LoginManager()
